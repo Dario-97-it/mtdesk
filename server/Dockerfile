@@ -25,10 +25,17 @@
 #  FASE 1 - compilazione
 # ---------------------------------------------------------------------
 #  Versione di Rust fissata di proposito: una build che cambia compilatore
-#  da sola non e' ripetibile. NOTA: serve Cargo 1.78 o superiore, perche'
-#  Cargo.lock e' in formato versione 4 (il client invece e' fermo a Rust
-#  1.75.0 per vincoli di ABI: sono due catene di build indipendenti).
-FROM rust:1.83.0-bookworm AS compilazione
+#  da sola non e' ripetibile.
+#
+#  PERCHE' PROPRIO QUESTA: e' la versione con cui il centralino e' stato
+#  compilato e provato davvero (rustc 1.99.1). Il minimo non e' "Cargo 1.78"
+#  come diceva la prima stesura di questo file: quello basta a LEGGERE
+#  Cargo.lock (formato versione 4), ma le dipendenze bloccate nel lock
+#  chiedono di piu' - time 0.3.54 vuole Rust 1.88, uuid 1.24 vuole 1.85,
+#  icu_* 2.2 vuole 1.86. Con l'1.83 scritta qui in origine la build si
+#  fermava subito. (Il client invece e' fermo a Rust 1.75.0 per vincoli di
+#  ABI: sono due catene di build indipendenti.)
+FROM rust:1.99.1-bookworm AS compilazione
 
 #  Librerie di sistema necessarie alla compilazione:
 #  - pkg-config, clang: usati dai crate che compilano codice C
@@ -55,6 +62,12 @@ COPY libs/hbb_common/Cargo.toml libs/hbb_common/Cargo.toml
 #  Poi il codice vero.
 COPY src src
 COPY libs libs
+#  Le sette librerie portate dentro al repository (vedi i blocchi [patch] in
+#  fondo a Cargo.toml). SENZA questa riga la build si ferma con
+#  "patch location ... does not contain packages matching ...": la prima
+#  stesura di questo file la dimenticava, perche' third_party e' arrivata in
+#  un commit successivo e l'immagine non era mai stata costruita davvero.
+COPY third_party third_party
 COPY schema.sql schema.sql
 
 #  DATABASE DI COMPILAZIONE

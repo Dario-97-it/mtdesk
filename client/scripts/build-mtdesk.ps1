@@ -56,8 +56,8 @@ Step "BUILD (cargo + flutter) - PUO' RICHIEDERE 30-60 MIN"
 python build.py --portable --flutter --hwcodec
 
 $ReleaseDir = Join-Path $ClientRoot "flutter\build\windows\x64\runner\Release"
-if (-not (Test-Path (Join-Path $ReleaseDir "mtdesk.exe"))) {
-  Write-Error "Build non riuscita: mtdesk.exe non trovato in $ReleaseDir. Controlla i log sopra."
+if (-not (Test-Path (Join-Path $ReleaseDir "MTDesk.exe"))) {
+  Write-Error "Build non riuscita: MTDesk.exe non trovato in $ReleaseDir. Controlla i log sopra."
 }
 Write-Host "OK: eseguibile in $ReleaseDir" -ForegroundColor Green
 

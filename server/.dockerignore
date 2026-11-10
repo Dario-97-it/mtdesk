@@ -1,0 +1,24 @@
+# MTDesk - cosa NON mandare a Docker quando costruisce l'immagine del centralino.
+#
+# target/ e' la cartella di compilazione locale: pesa diversi GB (4,4 GB al
+# momento in cui e' stato scritto questo file) e senza questa riga Docker la
+# copierebbe tutta nel contesto a ogni build, per poi non usarla.
+target/
+
+# Dati e segreti locali: non devono mai finire dentro un'immagine.
+.env
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+data/
+id_ed25519
+id_ed25519.pub
+
+# Non servono alla compilazione.
+.git
+.gitignore
+.gitattributes
+.cargo/
+README.md
+docs/
+tests/
