@@ -145,6 +145,34 @@ pub fn core_main() -> Option<Vec<String>> {
     }
     #[cfg(windows)]
     {
+        // MTDesk: l'eseguibile di ASSISTENZA RAPIDA (MTDesk-qs.exe) si presenta
+        // al cliente con la finestra compatta: logo, ID, password, stato del
+        // collegamento e il pulsante per uscire. Niente pannello "Controlla
+        // desktop remoto", niente rubrica, niente invito a installare.
+        //
+        // A questo punto `_is_quick_support` e' vero solo se il pacchetto
+        // autoestraente ha passato `--quick_support` (lo fa quando il suo nome
+        // contiene "-qs"), oppure se l'eseguibile stesso si chiama cosi'. Il
+        // caso "avviato come amministratore", che la riga piu' sotto tratta
+        // anch'esso come quick support, qui e' escluso di proposito: chi apre
+        // il programma completo da amministratore deve vedere il programma
+        // completo.
+        //
+        // Si riusa la modalita' "solo connessioni in ingresso" che il codice
+        // ha gia' (config::is_incoming_only), normalmente attivabile soltanto
+        // da un file di configurazione firmato. Effetti: interfaccia ridotta e
+        // connessioni in uscita rifiutate (src/client.rs), cioe' con questo
+        // file il cliente puo' farsi assistere ma non controllare altri PC.
+        let avviato_come_assistenza_rapida = (_is_quick_support || is_quick_support_exe(&arg_exe))
+            && args.is_empty()
+            && !crate::platform::is_installed();
+        if avviato_come_assistenza_rapida {
+            let mut hs = config::HARD_SETTINGS.write().unwrap();
+            hs.entry("conn-type".to_owned())
+                .or_insert_with(|| "incoming".to_owned());
+            hs.entry("disable-installation".to_owned())
+                .or_insert_with(|| "Y".to_owned());
+        }
         _is_quick_support |= !crate::platform::is_installed()
             && args.is_empty()
             && (is_quick_support_exe(&arg_exe)

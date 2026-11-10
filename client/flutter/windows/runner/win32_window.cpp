@@ -129,7 +129,12 @@ const wchar_t* WindowClassRegistrar::GetWindowClass() {
           LoadIcon(window_class.hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
     }
     
-    window_class.hbrBackground = 0;
+    // MTDesk: sfondo nativo nel colore di base del brand (#0A0A14).
+    // Con 0 la finestra restava BIANCA dal momento in cui compare a quello in
+    // cui Flutter disegna il primo fotogramma: su un programma a tema scuro e'
+    // un lampo ben visibile a ogni avvio (qualche secondo al primo lancio del
+    // pacchetto autoestraente).
+    window_class.hbrBackground = CreateSolidBrush(RGB(0x0A, 0x0A, 0x14));
     window_class.lpszMenuName = nullptr;
     window_class.lpfnWndProc = Win32Window::WndProc;
     RegisterClass(&window_class);
