@@ -493,24 +493,25 @@ pub const VER_TYPE_RUSTDESK_CLIENT: &str = "rustdesk-client";
 pub const VER_TYPE_RUSTDESK_SERVER: &str = "rustdesk-server";
 
 pub fn version_check_request(typ: String) -> (VersionCheckRequest, String) {
-    const URL: &str = "https://api.rustdesk.com/version/latest";
-
-    use sysinfo::System;
-    let system = System::new();
-    let os = system.distribution_id();
-    let os_version = system.os_version().unwrap_or_default();
-    let arch = std::env::consts::ARCH.to_string();
-    #[allow(deprecated)]
-    let device_id = fingerprint::get_fingerprint(None, None);
+    // MTDesk: nessuna chiamata verso terzi e nessuna impronta del dispositivo.
+    //
+    // L'implementazione di RustDesk costruiva una richiesta verso
+    // `https://api.rustdesk.com/version/latest` contenente sistema operativo,
+    // versione, architettura e `fingerprint::get_fingerprint(...)`, cioe' un
+    // identificativo del PC del cliente.
+    //
+    // Restituiamo una richiesta vuota e un URL vuoto: chi riceve questo URL non
+    // puo' contattare nessuno. Il controllo aggiornamenti di MTDesk e' altrove
+    // e non invia dati (client/flutter/lib/mtdesk_update.dart).
     (
         VersionCheckRequest {
-            os,
-            os_version,
-            arch,
-            device_id,
+            os: String::new(),
+            os_version: String::new(),
+            arch: String::new(),
+            device_id: Vec::new(),
             typ,
         },
-        URL.to_string(),
+        String::new(),
     )
 }
 

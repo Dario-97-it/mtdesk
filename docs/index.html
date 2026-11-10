@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Documentazione · MTDesk</title>
+<meta name="description" content="Documentazione di MTDesk: download, aiuto e risoluzione dei problemi, trattamento dei dati.">
+<link rel="stylesheet" href="_stile.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo"><span class="mark"></span> MTDesk</div>
+</header>
+
+<div class="riga-grad"></div>
+<h1>Documentazione MTDesk</h1>
+<p class="sommario">MTDesk è il programma di assistenza remota di Marketing Tools: serve a far
+vedere il proprio schermo a un tecnico, o a prenderne il controllo per dare assistenza. Gratuito,
+senza account, senza limiti di tempo, su server propri.</p>
+
+<ul class="indice">
+  <li><a href="aiuto.html">Aiuto e problemi<small>Schermo nero su Ubuntu, Wayland, permessi, schermata di accesso</small></a></li>
+  <li><a href="privacy.html">Trattamento dei dati<small>Quali dati tratta il programma e verso chi escono</small></a></li>
+  <li><a href="https://github.com/Dario-97-it/mtdesk/releases/latest">Scarica<small>Windows e Ubuntu, ultima versione</small></a></li>
+  <li><a href="https://github.com/Dario-97-it/mtdesk">Codice sorgente<small>Repository pubblico, licenza AGPL-3.0</small></a></li>
+</ul>
+
+<h2>Come funziona, in pratica</h2>
+<div class="card">
+<p>Nel controllo remoto ci sono sempre <strong>due ruoli</strong>, e serve una copia di MTDesk per
+parte.</p>
+<ol>
+  <li>Il cliente apre MTDesk. In alto vede il suo <strong>ID a 9 cifre</strong> e una
+  <strong>password</strong> temporanea.</li>
+  <li>Li comunica al tecnico: telefono, messaggio, email, come è più comodo.</li>
+  <li>Il tecnico scrive quell'ID, preme <strong>Connetti</strong> e inserisce la password.</li>
+  <li>Chiusa la sessione il collegamento finisce. La password temporanea cambia a ogni riavvio del
+  programma, quindi non resta nessuna porta aperta.</li>
+</ol>
+<p>Per l'assistenza ricorrente, sul PC del cliente si può impostare una <strong>password di accesso
+permanente</strong> (Impostazioni → Sicurezza): il cliente la comunica una sola volta e il tecnico
+può entrare quando serve.</p>
+</div>
+
+<h2>Sistemi supportati</h2>
+<div class="card">
+<table>
+  <tr><th>Windows 10 e 11 (64 bit)</th><td>Versione completa che si installa, e versione per
+  assistenza veloce che non installa nulla.</td></tr>
+  <tr><th>Ubuntu e Debian (64 bit)</th><td>Pacchetto <code>.deb</code>. Su Ubuntu 22.04 e successivi
+  leggi la sezione <a href="aiuto.html#x11-richiesto">Serve X11, non Wayland</a>: è il problema più
+  frequente.</td></tr>
+  <tr><th>macOS</th><td>Non supportato. Il programma non viene compilato per macOS.</td></tr>
+</table>
+</div>
+
+<h2>Il file degli aggiornamenti</h2>
+<div class="card">
+<p>MTDesk, all'avvio, legge <a href="version.json"><code>version.json</code></a> da questa stessa
+cartella per sapere se esiste una versione più recente, e in caso mostra un avviso. Non scarica e
+non installa niente da solo, e non invia nessun dato: i dettagli sono nella pagina
+<a href="privacy.html">Trattamento dei dati</a>.</p>
+</div>
+
+<footer>
+  <p><a href="aiuto.html">Aiuto</a> · <a href="privacy.html">Trattamento dei dati</a> ·
+  <a href="https://github.com/Dario-97-it/mtdesk/issues">Segnala un problema</a></p>
+  <p><strong>Marketing Tools</strong> · MTDesk · licenza AGPL-3.0 · opera derivata non affiliata al
+  progetto di origine</p>
+</footer>
+
+</div>
+</body>
+</html>

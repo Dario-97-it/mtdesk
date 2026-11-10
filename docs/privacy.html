@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trattamento dei dati · MTDesk</title>
+<meta name="description" content="Quali dati tratta MTDesk, perché, per quanto tempo e verso chi escono. Informativa in linguaggio semplice.">
+<link rel="stylesheet" href="_stile.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo"><span class="mark"></span> MTDesk</div>
+</header>
+
+<div class="riga-grad"></div>
+<h1>Trattamento dei dati</h1>
+<p class="sommario">Cosa fa MTDesk con i dati del computer su cui viene installato. Scritto per
+essere letto, non per essere firmato senza leggerlo. Vale per la versione Windows e per quella
+Ubuntu.</p>
+
+<div class="nota stop">
+<strong>Da completare prima della pubblicazione.</strong> I dati identificativi del titolare
+(ragione sociale, indirizzo, partita IVA, indirizzo di contatto per l'esercizio dei diritti) non
+sono stati inseriti da chi ha redatto questa pagina e vanno compilati dal titolare.
+Le sezioni che li richiedono sono contrassegnate con <code>[DA COMPLETARE]</code>.
+Finché restano così, questa pagina descrive correttamente il funzionamento del programma ma
+<strong>non è un'informativa completa ai sensi del GDPR</strong>.
+</div>
+
+<h2>In due righe</h2>
+<div class="card">
+<p>MTDesk serve a far vedere e comandare un computer da lontano, per dare assistenza. Non chiede
+registrazione, non chiede email, non crea account. Durante una sessione, quello che accade sullo
+schermo lo vede soltanto il tecnico collegato. Il server di appoggio vede passare i dati ma
+<strong>non è in grado di leggerli</strong>, perché sono cifrati da un capo all'altro.</p>
+</div>
+
+<h2>Quali dati tratta, e perché</h2>
+<div class="card">
+<table>
+  <tr><th>Dato</th><th>Dove sta</th><th>Perché serve</th></tr>
+  <tr>
+    <td><strong>ID a 9 cifre</strong> del computer</td>
+    <td>Sul computer e sul centralino</td>
+    <td>È l'indirizzo con cui il tecnico trova il PC. Deriva da caratteristiche della macchina e
+    resta stabile nel tempo.</td>
+  </tr>
+  <tr>
+    <td><strong>Indirizzo IP</strong> pubblico e locale</td>
+    <td>Sul centralino</td>
+    <td>Serve a mettere in comunicazione i due computer. È il meccanismo stesso del collegamento:
+    senza, non si può stabilire.</td>
+  </tr>
+  <tr>
+    <td><strong>Nome del computer</strong> e nome utente del sistema</td>
+    <td>Mostrati al tecnico durante la sessione</td>
+    <td>Permettono al tecnico di capire a quale macchina è collegato.</td>
+  </tr>
+  <tr>
+    <td><strong>Registro eventi</strong> (log tecnico)</td>
+    <td>Solo sul computer, in locale</td>
+    <td>Serve a capire i malfunzionamenti. Non viene inviato da nessuna parte: se serve, lo si
+    allega a mano a una segnalazione.</td>
+  </tr>
+  <tr>
+    <td><strong>Password di sessione</strong></td>
+    <td>Solo in memoria, cambia a ogni riavvio</td>
+    <td>Autorizza il singolo collegamento. Non è conservata.</td>
+  </tr>
+  <tr>
+    <td><strong>Password permanente</strong> (solo se impostata)</td>
+    <td>Sul computer, in forma cifrata</td>
+    <td>Serve se il cliente vuole che il tecnico possa entrare senza dover confermare ogni volta.
+    È una scelta del cliente, non è attiva per default.</td>
+  </tr>
+</table>
+<p><strong>Quello che MTDesk non fa:</strong> non raccoglie statistiche d'uso, non manda dati
+pubblicitari, non profila, non registra automaticamente le sessioni, non legge i file del computer
+al di fuori di un trasferimento richiesto durante una sessione, e non invia alcuna impronta del
+dispositivo a nessun servizio.</p>
+</div>
+
+<h2>Verso chi escono dei dati</h2>
+<div class="card">
+<h3>Il centralino di Marketing Tools</h3>
+<p>È il server a cui MTDesk si collega per trovare l'altro computer. Riceve l'ID e gli indirizzi IP.
+È gestito direttamente da Marketing Tools e <strong>non è un servizio di terzi</strong>. I contenuti
+della sessione (schermo, tastiera, file) gli passano attraverso solo quando il collegamento diretto
+non è possibile, e in quel caso sono cifrati: il server li inoltra senza poterli leggere.</p>
+
+<h3>GitHub (controllo versione e download)</h3>
+<p>Questa è l'unica uscita verso un fornitore esterno, e va detta chiaramente. All'avvio MTDesk
+legge un piccolo file pubblico ospitato su <strong>GitHub Pages</strong> per sapere se esiste una
+versione più recente. È una lettura come aprire una pagina web: MTDesk non invia nulla, ma
+<strong>GitHub, come qualunque sito, vede l'indirizzo IP di chi effettua la richiesta</strong>.
+Lo stesso vale quando si scarica il programma dalla pagina delle release.</p>
+<p>Il controllo si può disattivare: nelle impostazioni di MTDesk, oppure semplicemente bloccando
+l'accesso a quel dominio. Se GitHub è irraggiungibile il programma funziona normalmente e non
+segnala errori.</p>
+
+<h3>Nessun altro</h3>
+<p>MTDesk non contatta nessun altro servizio. In particolare, pur derivando dal codice di un altro
+programma, <strong>non comunica con i server di quel progetto</strong>: le chiamate verso il loro
+servizio di aggiornamento e verso il loro server di amministrazione sono state rimosse dal codice.</p>
+</div>
+
+<h2>Per quanto tempo</h2>
+<div class="card">
+<ul>
+  <li><strong>Sul computer del cliente:</strong> impostazioni e registro restano finché il programma
+  è installato. Si cancellano disinstallandolo ed eliminando la cartella delle impostazioni
+  (<code>%APPDATA%\MTDesk</code> su Windows, <code>~/.config/MTDesk</code> su Ubuntu).</li>
+  <li><strong>Sul centralino:</strong> ID e ultimo indirizzo IP noto restano registrati per
+  permettere i collegamenti successivi. <code>[DA COMPLETARE: periodo di conservazione deciso dal
+  titolare e procedura di cancellazione periodica]</code></li>
+  <li><strong>Contenuti delle sessioni:</strong> non vengono conservati da nessuna parte. Terminata
+  la sessione non resta nulla, salvo i file che il tecnico ha trasferito su richiesta.</li>
+</ul>
+</div>
+
+<h2>Base giuridica e titolare</h2>
+<div class="card">
+<p>Il trattamento serve a <strong>erogare l'assistenza tecnica richiesta</strong>: la base giuridica
+è l'esecuzione del rapporto con il cliente, e per i dati tecnici strettamente necessari al
+collegamento l'interesse legittimo a far funzionare il servizio.</p>
+<p><strong>Titolare del trattamento:</strong> <code>[DA COMPLETARE: ragione sociale, sede, partita
+IVA]</code></p>
+<p><strong>Per esercitare i propri diritti</strong> (accesso, rettifica, cancellazione, limitazione,
+opposizione, portabilità) e per qualsiasi domanda sul trattamento:
+<code>[DA COMPLETARE: indirizzo di contatto dedicato]</code></p>
+<p>È sempre possibile proporre reclamo al Garante per la protezione dei dati personali.</p>
+</div>
+
+<h2>Il controllo resta al cliente</h2>
+<div class="card">
+<p>Sono scelte che il cliente può fare in qualsiasi momento, senza passare dal tecnico:</p>
+<ul>
+  <li><strong>Chiudere il programma</strong> interrompe ogni possibilità di collegamento.</li>
+  <li><strong>Non impostare la password permanente</strong> significa che nessuno può entrare senza
+  che il cliente comunichi la password del momento.</li>
+  <li><strong>Disinstallare</strong> rimuove il programma e il servizio di sistema.</li>
+  <li>Durante una sessione, il cliente <strong>vede sempre</strong> che qualcuno è collegato e può
+  chiudere il collegamento.</li>
+</ul>
+</div>
+
+<h2>Licenza del programma</h2>
+<div class="card">
+<p>MTDesk è distribuito gratuitamente sotto licenza <strong>GNU AGPL versione 3</strong>. Non c'è
+nessun costo, nessun limite di tempo, nessuna licenza da acquistare. Chi riceve il programma ha
+diritto a ottenerne il codice sorgente: per questo il codice è pubblico su
+<a href="https://github.com/Dario-97-it/mtdesk">github.com/Dario-97-it/mtdesk</a>.</p>
+<p>MTDesk è un'opera derivata di un progetto preesistente rilasciato con la stessa licenza; non è
+affiliato a quel progetto né da esso approvato. L'elenco verificabile delle modifiche è nel
+repository.</p>
+</div>
+
+<footer>
+  <p><a href="./">Documentazione MTDesk</a> · <a href="aiuto.html">Aiuto</a> ·
+  <a href="https://github.com/Dario-97-it/mtdesk">Codice sorgente</a></p>
+  <p><strong>Marketing Tools</strong> · MTDesk · licenza AGPL-3.0</p>
+</footer>
+
+</div>
+</body>
+</html>

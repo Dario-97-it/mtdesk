@@ -3751,7 +3751,8 @@ Widget loadPowered(BuildContext context) {
     cursor: SystemMouseCursors.click,
     child: GestureDetector(
       onTap: () {
-        launchUrl(Uri.parse('https://rustdesk.com'));
+        // MTDesk: il nostro sito, non quello di RustDesk.
+        launchUrl(Uri.parse('https://marketingtools.digital'));
       },
       child: Opacity(
           opacity: 0.5,

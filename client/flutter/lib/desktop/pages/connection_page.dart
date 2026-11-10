@@ -41,7 +41,10 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
   double? get height => bind.isIncomingOnly() ? null : em * 3;
 
   void onUsePublicServerGuide() {
-    const url = "https://rustdesk.com/pricing";
+    // MTDesk: qui RustDesk apriva il proprio LISTINO PREZZI. Con
+    // using_public_server() corretto (sempre false) questo punto non viene mai
+    // raggiunto, ma l'indirizzo e' sostituito perche' non resti nel binario.
+    const url = "https://dario-97-it.github.io/mtdesk/aiuto.html#centralino";
     canLaunchUrlString(url).then((can) {
       if (can) {
         launchUrlString(url);

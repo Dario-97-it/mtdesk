@@ -950,55 +950,27 @@ pub fn check_software_update() {
     }
 }
 
-// No need to check `danger_accept_invalid_cert` for now.
-// Because the url is always `https://api.rustdesk.com/version/latest`.
+// MTDesk: il controllo aggiornamenti originale di RustDesk e' DISATTIVATO.
+//
+// Il codice di RustDesk interrogava `https://api.rustdesk.com/version/latest`
+// inviando sistema operativo, versione, architettura e un'IMPRONTA DEL
+// DISPOSITIVO del cliente, e in caso di versione piu' recente scaricava e
+// installava RustDesk al posto di MTDesk. Era raggiungibile da updater.rs
+// (casella "Auto update" nelle impostazioni) e non era fermato da
+// is_custom_client(), che blocca soltanto check_software_update().
+//
+// MTDesk usa il proprio controllo, che non manda nessun dato: legge un file
+// pubblico su GitHub Pages e mostra solo un avviso. Vedi
+// client/flutter/lib/mtdesk_update.dart.
+//
+// Questa funzione resta come punto di blocco unico: qualunque chiamante
+// (updater.rs, flutter_ffi.rs, ui.rs) si fermera' qui.
 #[tokio::main(flavor = "current_thread")]
 pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
-    let (request, url) =
-        hbb_common::version_check_request(hbb_common::VER_TYPE_RUSTDESK_CLIENT.to_string());
-    let proxy_conf = Config::get_socks();
-    let tls_url = get_url_for_tls(&url, &proxy_conf);
-    let tls_type = get_cached_tls_type(tls_url);
-    let is_tls_not_cached = tls_type.is_none();
-    let tls_type = tls_type.unwrap_or(TlsType::Rustls);
-    let client = create_http_client_async(tls_type, false);
-    let latest_release_response = match client.post(&url).json(&request).send().await {
-        Ok(resp) => {
-            upsert_tls_cache(tls_url, tls_type, false);
-            resp
-        }
-        Err(err) => {
-            if is_tls_not_cached && err.is_request() {
-                let tls_type = TlsType::NativeTls;
-                let client = create_http_client_async(tls_type, false);
-                let resp = client.post(&url).json(&request).send().await?;
-                upsert_tls_cache(tls_url, tls_type, false);
-                resp
-            } else {
-                return Err(err.into());
-            }
-        }
-    };
-    let bytes = latest_release_response.bytes().await?;
-    let resp: hbb_common::VersionCheckResponse = serde_json::from_slice(&bytes)?;
-    let response_url = resp.url;
-    let latest_release_version = response_url.rsplit('/').next().unwrap_or_default();
-
-    if get_version_number(&latest_release_version) > get_version_number(crate::VERSION) {
-        #[cfg(feature = "flutter")]
-        {
-            let mut m = HashMap::new();
-            m.insert("name", "check_software_update_finish");
-            m.insert("url", &response_url);
-            if let Ok(data) = serde_json::to_string(&m) {
-                let _ = crate::flutter::push_global_event(crate::flutter::APP_TYPE_MAIN, data);
-            }
-        }
-        *SOFTWARE_UPDATE_URL.lock().unwrap() = response_url;
-    } else {
-        *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
-    }
-    Ok(())
+    *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
+    hbb_common::bail!(
+        "MTDesk: controllo aggiornamenti di RustDesk disattivato (vedi mtdesk_update.dart)"
+    );
 }
 
 #[inline]
@@ -1082,8 +1054,24 @@ fn get_api_server_(api: String, custom: String) -> String {
             return format!("http://{}", s);
         }
     }
-    "https://admin.rustdesk.com".to_owned()
+    // MTDesk: nessun ripiego verso terzi.
+    //
+    // Qui RustDesk restituiva "https://admin.rustdesk.com". Poiche'
+    // PROD_RENDEZVOUS_SERVER resta sempre vuoto (non viene mai scritto da
+    // nessuna parte nel codice) e l'utente non imposta un server
+    // personalizzato, in un'installazione MTDesk pulita si arrivava DAVVERO
+    // qui: il pulsante "Login" avrebbe mandato le credenziali al server di
+    // amministrazione di RustDesk.
+    //
+    // MTDesk non ha un server API (il nostro centralino fa solo rendezvous e
+    // relay), quindi la risposta corretta e' "nessun server API": i chiamanti
+    // gestiscono gia' la stringa vuota.
+    String::new()
 }
+
+/// Host che appartengono a un'infrastruttura pubblica gestita da noi.
+/// Vuoto: MTDesk e' solo self-hosted.
+const PUBLIC_API_HOSTS: &[&str] = &[];
 
 #[inline]
 pub fn is_public(url: &str) -> bool {
@@ -1095,7 +1083,11 @@ pub fn is_public(url: &str) -> bool {
         return false;
     };
     let host = host.strip_suffix('.').unwrap_or(host);
-    host == "rustdesk.com" || host.ends_with(".rustdesk.com")
+    // MTDesk: non esiste un'infrastruttura pubblica nostra, quindi nessun host
+    // e' "pubblico". Qui RustDesk confrontava con rustdesk.com e *.rustdesk.com.
+    // Il risultato pratico non cambia (nessun URL MTDesk e' mai stato su quel
+    // dominio), ma il riferimento e' rimosso.
+    PUBLIC_API_HOSTS.iter().any(|h| host == *h)
 }
 
 pub fn get_udp_punch_enabled() -> bool {
@@ -2092,7 +2084,18 @@ pub fn create_symmetric_key_msg(their_pk_b: [u8; 32]) -> (Bytes, Bytes, secretbo
 
 #[inline]
 pub fn using_public_server() -> bool {
-    crate::get_custom_rendezvous_server(get_option("custom-rendezvous-server")).is_empty()
+    // MTDesk: mai. Il centralino e' compilato dentro il programma
+    // (RENDEZVOUS_SERVERS in hbb_common/src/config.rs), quindi non esiste la
+    // condizione "sto usando il server pubblico gratuito".
+    //
+    // L'implementazione di RustDesk era:
+    //   get_custom_rendezvous_server(get_option("custom-rendezvous-server")).is_empty()
+    // e restituiva TRUE in MTDesk, perche' quella funzione guarda l'opzione
+    // "custom-rendezvous-server" e PROD_RENDEZVOUS_SERVER (sempre vuoto), non
+    // RENDEZVOUS_SERVERS. Conseguenza: la schermata principale avvisava di
+    // essere sul server pubblico e offriva al cliente un link al LISTINO
+    // PREZZI di RustDesk.
+    false
 }
 
 pub struct ThrottledInterval {
@@ -2864,37 +2867,30 @@ mod tests {
 
     #[test]
     fn test_is_public() {
-        // Test URLs containing "rustdesk.com/"
-        assert!(is_public("https://rustdesk.com/"));
-        assert!(is_public("https://www.rustdesk.com/"));
-        assert!(is_public("https://api.rustdesk.com/v1"));
-        assert!(is_public("https://API.RUSTDESK.COM/v1"));
-        assert!(is_public("https://rustdesk.com/path"));
-
-        // Test URLs ending with "rustdesk.com"
-        assert!(is_public("rustdesk.com"));
-        assert!(is_public("https://rustdesk.com"));
-        assert!(is_public("https://RustDesk.com"));
-        assert!(is_public("http://www.rustdesk.com"));
-        assert!(is_public("https://api.rustdesk.com"));
-
-        // Test non-public URLs
+        // MTDesk: PUBLIC_API_HOSTS e' vuoto, quindi nessun host risulta pubblico.
+        // I test originali di RustDesk verificavano il riconoscimento di
+        // rustdesk.com e *.rustdesk.com: non hanno piu' senso qui.
         assert!(!is_public("https://example.com"));
         assert!(!is_public("https://custom-server.com"));
         assert!(!is_public("http://192.168.1.1"));
         assert!(!is_public("localhost"));
-        assert!(!is_public("https://rustdesk.computer.com"));
-        assert!(!is_public("rustdesk.comhello.com"));
+        assert!(!is_public("mtdesk.marketingtools.digital"));
+        assert!(!is_public(""));
     }
 
     #[test]
-    fn test_is_public_matches_rustdesk_root_domain() {
-        assert!(is_public("rustdesk.com/"));
-        assert!(is_public("rustdesk.com:21117"));
-        assert!(is_public("api.rustdesk.com:21117"));
-        assert!(!is_public("hello-rustdesk.com"));
-        assert!(!is_public("api.rustdesk.com.evil.test"));
-        assert!(!is_public("https://rustdesk.com@evil.test"));
+    fn test_is_public_rifiuta_tutto_quando_la_lista_e_vuota() {
+        // Finche' PUBLIC_API_HOSTS resta vuoto la funzione deve rispondere
+        // sempre false, qualunque forma abbia l'indirizzo.
+        for u in [
+            "esempio.it/",
+            "esempio.it:21117",
+            "api.esempio.it:21117",
+            "https://esempio.it@evil.test",
+            "http://[::1]:8080",
+        ] {
+            assert!(!is_public(u), "{u} non deve risultare pubblico");
+        }
     }
 
     #[test]
@@ -2911,10 +2907,10 @@ mod tests {
             "https://api.telegram.org/bot123/sendMessage",
             "https://admin.example.com"
         ));
-        assert!(!should_use_tcp_proxy_for_api_url(
-            "https://admin.rustdesk.com/api/login",
-            "https://admin.rustdesk.com"
-        ));
+        // MTDesk: qui RustDesk verificava che un server API PUBBLICO (il loro)
+        // non usasse il proxy TCP. Con PUBLIC_API_HOSTS vuoto non esistono piu'
+        // server pubblici, quindi il caso e' stato rimosso invece di essere
+        // riscritto con un host finto che non proverebbe nulla.
         assert!(!should_use_tcp_proxy_for_api_url(
             "https://admin.example.com/api/login",
             "not a url"

@@ -482,8 +482,8 @@ class _GeneralState extends State<_General> {
   Widget other() {
     final incomingOnly = bind.isIncomingOnly();
     final outgoingOnly = bind.isOutgoingOnly();
-    final showAutoUpdate = (isWindows && bind.mainIsInstalled()) ||
-    (isMacOS && bind.mainIsInstalled() && bind.mainIsInstalledDaemon(prompt: false) && !bind.isCustomClient());
+    // (la variabile showAutoUpdate e' stata rimossa insieme alla casella
+    //  "Auto update": vedi il commento piu' sotto)
     final children = <Widget>[
       if (!isWeb && !incomingOnly)
         _OptionCheckBox(context, 'Confirm before closing multiple tabs',
@@ -549,13 +549,16 @@ class _GeneralState extends State<_General> {
           kOptionEnableCheckUpdate,
           isServer: false,
         ),
-      if (showAutoUpdate)
-        _OptionCheckBox(
-          context,
-          'Auto update',
-          kOptionAllowAutoUpdate,
-          isServer: true,
-        ),
+      // MTDesk: casella "Auto update" RIMOSSA.
+      //
+      // Attivandola, su Windows installato partiva src/updater.rs, che
+      // interrogava api.rustdesk.com inviando un'impronta del PC e, trovata una
+      // versione piu' recente, scaricava e installava RUSTDESK al posto di
+      // MTDesk. Su Windows la casella era visibile perche' il suo gate era solo
+      // (isWindows && mainIsInstalled()), senza !isCustomClient().
+      //
+      // MTDesk avvisa degli aggiornamenti senza inviare dati e senza installare
+      // nulla da solo: vedi lib/mtdesk_update.dart.
       if (isWindows && !outgoingOnly)
         _OptionCheckBox(
           context,
@@ -2450,7 +2453,7 @@ class _AboutState extends State<_About> {
                       .marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
-                    launchUrlString('https://rustdesk.com/privacy.html');
+                    launchUrlString('https://dario-97-it.github.io/mtdesk/privacy.html');
                   },
                   child: Text(
                     translate('Privacy Statement'),
@@ -2458,7 +2461,7 @@ class _AboutState extends State<_About> {
                   ).marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
-                    launchUrlString('https://rustdesk.com');
+                    launchUrlString('https://marketingtools.digital');
                   },
                   child: Text(
                     translate('Website'),

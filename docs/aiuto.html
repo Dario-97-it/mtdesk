@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aiuto · MTDesk</title>
+<meta name="description" content="Risoluzione dei problemi di MTDesk: Wayland e X11 su Ubuntu, schermata di accesso, permessi, centralino.">
+<link rel="stylesheet" href="_stile.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo"><span class="mark"></span> MTDesk</div>
+</header>
+
+<div class="riga-grad"></div>
+<h1>Aiuto e risoluzione dei problemi</h1>
+<p class="sommario">Questa pagina si apre dai cartellini di avviso dentro MTDesk. Ogni sezione
+risponde a un avviso preciso. Se sei un cliente e ti è stato chiesto di aprire questa pagina,
+vai direttamente alla sezione che ti è stata indicata.</p>
+
+<ul class="indice">
+  <li><a href="#x11-richiesto">Serve X11, non Wayland<small>Ubuntu 22.04 e successivi — "lo schermo non si vede"</small></a></li>
+  <li><a href="#schermata-di-accesso">Schermata di accesso<small>Non si vede il login prima che l'utente entri</small></a></li>
+  <li><a href="#permessi">Permessi su Linux<small>Avviso su permessi o SELinux</small></a></li>
+  <li><a href="#centralino">Il centralino<small>Cos'è il server a cui si collega MTDesk</small></a></li>
+  <li><a href="#permessi-macos">macOS<small>Non è supportato</small></a></li>
+</ul>
+
+<h2 id="x11-richiesto">Serve X11, non Wayland</h2>
+<div class="card">
+<p><strong>Il sintomo.</strong> Su Ubuntu MTDesk si collega, mostra l'ID, ma chi dà assistenza
+vede lo schermo nero, oppure vede l'immagine ma mouse e tastiera non hanno effetto.</p>
+
+<p><strong>Il perché.</strong> Ubuntu 22.04 e tutte le versioni successive usano per default un
+sistema grafico chiamato <strong>Wayland</strong>. Wayland, per come è progettato, impedisce a un
+programma di leggere lo schermo degli altri programmi e di muovere il puntatore al posto
+dell'utente. È una scelta di sicurezza, non un difetto. Il sistema grafico precedente,
+<strong>X11</strong> (chiamato anche Xorg), lo permette, e MTDesk ha bisogno di quello.</p>
+
+<h3>Soluzione rapida: una sola sessione</h3>
+<p>Va bene quando serve assistenza adesso e una volta sola.</p>
+<ol>
+  <li>Esci dalla sessione: in alto a destra, menu di sistema → <em>Spegni / Esci</em> → <em>Esci</em>.</li>
+  <li>Nella schermata di accesso clicca sul tuo nome utente.</li>
+  <li>In <strong>basso a destra</strong> compare una piccola <strong>rotellina</strong> (ingranaggio): cliccala.</li>
+  <li>Scegli <strong>Ubuntu su Xorg</strong>, poi inserisci la password ed entra.</li>
+</ol>
+<div class="nota">Questa scelta vale solo per questa volta. Al prossimo riavvio Ubuntu torna a Wayland.</div>
+
+<h3>Soluzione definitiva: sempre X11</h3>
+<p>Va bene sul PC di un cliente che riceve assistenza con una certa regolarità. Serve la password
+di amministrazione del PC.</p>
+<pre><code>sudo nano /etc/gdm3/custom.conf</code></pre>
+<p>Dentro il file cerca la riga:</p>
+<pre><code>#WaylandEnable=false</code></pre>
+<p>Toglile il cancelletto iniziale, così:</p>
+<pre><code>WaylandEnable=false</code></pre>
+<p>Salva con <code>Ctrl+O</code>, <code>Invio</code>, poi esci con <code>Ctrl+X</code>. Infine
+riavvia il computer:</p>
+<pre><code>sudo reboot</code></pre>
+<p>Per controllare che sia andata a buon fine, dopo il riavvio apri il terminale e dai:</p>
+<pre><code>echo $XDG_SESSION_TYPE</code></pre>
+<p>Deve rispondere <code>x11</code>. Se risponde <code>wayland</code>, la modifica non ha avuto
+effetto: verifica di aver salvato il file e di aver riavviato.</p>
+<div class="nota attenzione">Su alcune installazioni il file si chiama
+<code>/etc/gdm/custom.conf</code> (senza il <code>3</code>). Se <code>nano</code> ti apre un file
+vuoto, prova quell'altro percorso.</div>
+</div>
+
+<h2 id="schermata-di-accesso">Schermata di accesso (prima che l'utente entri)</h2>
+<div class="card">
+<p><strong>Il sintomo.</strong> L'assistenza funziona quando l'utente è già dentro, ma se il PC
+viene riavviato lo schermo resta nero finché qualcuno non digita la password sul posto.</p>
+<p><strong>Il perché.</strong> La schermata di accesso di Ubuntu è gestita da GDM, che gira in
+Wayland anche quando la sessione dell'utente è in X11. Quindi non è catturabile.</p>
+<p><strong>La soluzione</strong> è la stessa della sezione precedente, ma va fatta
+<strong>obbligatoriamente nella versione definitiva</strong>: la modifica a
+<code>/etc/gdm3/custom.conf</code> con <code>WaylandEnable=false</code>. La scelta "Ubuntu su
+Xorg" dalla rotellina riguarda solo la sessione dell'utente e non tocca la schermata di accesso.</p>
+<p>Serve anche che MTDesk sia <strong>installato come servizio</strong> e non semplicemente
+avviato: solo così è attivo prima che qualcuno entri. Sul pacchetto <code>.deb</code> l'installazione
+del servizio è automatica.</p>
+<div class="nota stop"><strong>Da sapere prima di promettere questa funzione a un cliente.</strong>
+Senza questa modifica l'accesso non presidiato su Ubuntu funziona solo a sessione già aperta. È il
+punto in cui MTDesk su Linux differisce di più da come ci si aspetta che funzioni su Windows.</div>
+</div>
+
+<h2 id="permessi">Permessi su Linux</h2>
+<div class="card">
+<p><strong>Il sintomo.</strong> MTDesk mostra un avviso sui permessi, oppure la tastiera e il mouse
+remoti non rispondono mentre l'immagine dello schermo arriva correttamente.</p>
+
+<h3>Controlla che il servizio sia attivo</h3>
+<pre><code>systemctl status mtdesk</code></pre>
+<p>Deve comparire <code>active (running)</code>. Se non è attivo:</p>
+<pre><code>sudo systemctl enable --now mtdesk</code></pre>
+
+<h3>Controlla il dispositivo di input</h3>
+<p>Per muovere mouse e tastiera, MTDesk scrive su <code>/dev/uinput</code>. Verifica che esista:</p>
+<pre><code>ls -l /dev/uinput</code></pre>
+<p>Se il file non c'è, carica il modulo del kernel:</p>
+<pre><code>sudo modprobe uinput</code></pre>
+
+<h3>SELinux (non riguarda Ubuntu)</h3>
+<p>L'avviso su SELinux compare su Fedora, Red Hat, Rocky e derivate, non su Ubuntu o Debian. Se lo
+vedi su una di quelle distribuzioni, il modo corretto è creare una regola dedicata, non disattivare
+SELinux. Su Ubuntu il sistema equivalente è AppArmor e non ostacola MTDesk.</p>
+</div>
+
+<h2 id="centralino">Il centralino (il server a cui si collega MTDesk)</h2>
+<div class="card">
+<p>MTDesk non usa server di altre aziende. Si collega a un <strong>centralino gestito da Marketing
+Tools</strong>, il cui unico compito è far incontrare i due computer: trova il PC partendo dall'ID a
+9 cifre e, quando il collegamento diretto non passa (per esempio dietro a certe reti aziendali), fa
+da ponte per il traffico.</p>
+<p>L'indirizzo del centralino e la sua chiave sono <strong>già scritti dentro il programma</strong>:
+il cliente scarica, apre e vede solo ID e password. Non c'è niente da configurare.</p>
+<p>Schermo, tastiera e file viaggiano <strong>cifrati da un capo all'altro</strong>: il centralino
+vede passare i dati ma non è in grado di leggerli.</p>
+<p>Se il centralino è momentaneamente irraggiungibile, MTDesk resta aperto ma non riesce a trovare
+l'altro computer: in quel caso l'ID non diventa verde. Non è un problema del tuo PC.</p>
+</div>
+
+<h2 id="permessi-macos">macOS</h2>
+<div class="card">
+<p><strong>MTDesk non è disponibile per macOS.</strong> Il programma viene compilato e collaudato
+solo per Windows 10/11 e per Ubuntu. Se dentro il programma trovi un riferimento ai permessi di
+macOS, è un residuo dell'interfaccia multilingua e non riguarda una versione esistente.</p>
+</div>
+
+<h2>Il problema non è in questo elenco</h2>
+<div class="card">
+<p>Scrivi segnalando <strong>cosa stavi facendo</strong>, <strong>che sistema</strong> usano i due
+computer e <strong>cosa è comparso a schermo</strong>:
+<a href="https://github.com/Dario-97-it/mtdesk/issues">github.com/Dario-97-it/mtdesk/issues</a>.</p>
+<p>Se riesci, allega il registro degli eventi:</p>
+<table>
+  <tr><th>Windows</th><td><code>%APPDATA%\MTDesk\log</code></td></tr>
+  <tr><th>Ubuntu</th><td><code>~/.local/share/logs/MTDesk</code></td></tr>
+</table>
+</div>
+
+<footer>
+  <p><a href="./">Documentazione MTDesk</a> · <a href="privacy.html">Trattamento dei dati</a> ·
+  <a href="https://github.com/Dario-97-it/mtdesk">Codice sorgente</a></p>
+  <p><strong>Marketing Tools</strong> · MTDesk · licenza AGPL-3.0</p>
+</footer>
+
+</div>
+</body>
+</html>

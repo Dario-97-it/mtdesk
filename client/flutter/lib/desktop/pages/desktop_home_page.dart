@@ -449,7 +449,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       final isToUpdate = (isWindows || isMacOS) && bind.mainIsInstalled();
       String btnText = isToUpdate ? 'Update' : 'Download';
       GestureTapCallback onPressed = () async {
-        final Uri url = Uri.parse('https://rustdesk.com/download');
+        final Uri url = Uri.parse('https://github.com/Dario-97-it/mtdesk/releases/latest');
         await launchUrl(url);
       };
       if (isToUpdate) {
@@ -559,8 +559,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             () async {},
             marginTop: LinuxCards.isEmpty ? 20.0 : 5.0,
             help: 'Help',
-            link:
-                'https://rustdesk.com/docs/en/client/linux/#permissions-issue',
+            link: 'https://dario-97-it.github.io/mtdesk/aiuto.html#permessi',
             closeButton: true,
             closeOption: keyShowSelinuxHelpTip,
           ));
@@ -571,13 +570,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             "Warning", "wayland_experiment_tip", "", () async {},
             marginTop: LinuxCards.isEmpty ? 20.0 : 5.0,
             help: 'Help',
-            link: 'https://rustdesk.com/docs/en/client/linux/#x11-required'));
+            link: 'https://dario-97-it.github.io/mtdesk/aiuto.html#x11-richiesto'));
       } else if (bind.mainIsLoginWayland()) {
         LinuxCards.add(buildInstallCard("Warning",
             "Login screen using Wayland is not supported", "", () async {},
             marginTop: LinuxCards.isEmpty ? 20.0 : 5.0,
             help: 'Help',
-            link: 'https://rustdesk.com/docs/en/client/linux/#login-screen'));
+            link: 'https://dario-97-it.github.io/mtdesk/aiuto.html#schermata-di-accesso'));
       }
       if (LinuxCards.isNotEmpty) {
         return Column(

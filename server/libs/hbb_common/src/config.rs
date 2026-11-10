@@ -97,8 +97,9 @@ lazy_static::lazy_static! {
     pub static ref APP_HOME_DIR: RwLock<String> = Default::default();
 }
 
-pub const LINK_DOCS_HOME: &str = "https://rustdesk.com/docs/en/";
-pub const LINK_DOCS_X11_REQUIRED: &str = "https://rustdesk.com/docs/en/manual/linux/#x11-required";
+// MTDesk: documentazione nostra, pubblicata da GitHub Pages dalla cartella docs/.
+pub const LINK_DOCS_HOME: &str = "https://dario-97-it.github.io/mtdesk/";
+pub const LINK_DOCS_X11_REQUIRED: &str = "https://dario-97-it.github.io/mtdesk/aiuto.html#x11-richiesto";
 
 lazy_static::lazy_static! {
     pub static ref HELPER_URL: HashMap<&'static str, &'static str> = HashMap::from([
