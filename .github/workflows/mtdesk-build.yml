@@ -59,6 +59,9 @@ env:
   FLUTTER_VERSION: "3.24.5"       # riga 28 upstream
   # --- Versioni del generatore del "ponte" Dart<->Rust (da client/.github/workflows/bridge.yml) ---
   BRIDGE_FLUTTER_VERSION: "3.22.3"      # upstream genera il bridge con 3.22.3 anche se poi compila con 3.24.5
+  # --- Strumenti della sola build Windows (lavoro 4) ---
+  LLVM_VERSION: "15.0.6"          # per bindgen/libclang. Vincolo, non preferenza.
+  NASM_VERSION: "2.16.03"         # assembler richiesto dai codec aom e libvpx
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
   CARGO_EXPAND_VERSION: "1.0.95"
   # --- Librerie native C/C++ (ffmpeg, aom, opus, libvpx, libyuv) ---
@@ -702,13 +705,20 @@ jobs:
 
             | Sistema | File | Come arriva qui |
             |---|---|---|
-            | Windows 10/11 (64 bit) | `MTDesk-windows-x86_64-install.exe` | caricato a mano |
-            | Windows, avvio rapido senza installare | `MTDesk-qs.exe` | caricato a mano |
+            | Windows 10/11 (64 bit) | `MTDesk-windows-x86_64-install.exe` | automatico |
+            | Windows, avvio rapido senza installare | `MTDesk-qs.exe` | automatico |
             | Ubuntu 22.04 / 24.04 e Debian 12 (64 bit) | `mtdesk-ubuntu-amd64.deb` | automatico |
 
-            I due file per Windows si compilano sul PC e si allegano a mano a questa
-            pagina: se non li vedi ancora nell'elenco degli allegati qui sotto, vuol
-            dire che non sono stati caricati, non che il link e' rotto.
+            Tutti i file sono compilati da GitHub Actions. Accanto a ognuno c'e' un
+            file `.sha256` con l'impronta, per verificare di aver scaricato il file
+            giusto e integro.
+
+            **Differenza fra i due file per Windows.** Quello che finisce in
+            `-install.exe` chiede il permesso di installarsi e resta sul computer:
+            serve per l'assistenza che si ripete nel tempo. `MTDesk-qs.exe` si apre,
+            mostra i codici e basta: non installa niente e non parte da solo al
+            riavvio. Non e' una differenza estetica, e' il nome del file a decidere
+            il comportamento del programma.
 
             ### Installazione su Ubuntu
 
@@ -773,3 +783,286 @@ jobs:
 #  Il bisogno vero che questo workflow risolve e' Ubuntu: non c'e' una macchina
 #  Linux in casa, quindi senza GitHub Actions il .deb non esisterebbe.
 # =============================================================================
+
+  # ===========================================================================
+  #  LAVORO 4 - Compila MTDesk per Windows e allega i due .exe alla Release
+  # ===========================================================================
+  #  PERCHE' ADESSO SI PUO'
+  #  Questo lavoro prima non esisteva, e il README dichiarava la build Windows
+  #  "non automatizzabile in modo affidabile". Il motivo era uno solo: serviva
+  #  il motore Flutter compilato da RustDesk, scaricato da un tag mobile senza
+  #  checksum. Verificato il 10/11/2026 che con il motore UFFICIALE dello SDK
+  #  la build passa e il programma si avvia, quel vincolo e' caduto.
+  #
+  #  DURATA: la prima volta 1-2 ore (vcpkg deve costruire ffmpeg, aom, libvpx,
+  #  opus e libyuv da zero), poi molto meno grazie alla cache.
+  #
+  #  INDIPENDENZA: il lavoro gira SENZA scaricare nulla da repository di terzi.
+  #  Le dipendenze Rust stanno in client/third_party nel repository.
+  # ===========================================================================
+  windows:
+    name: 4. Compila per Windows (x86_64)
+    needs: [controllo-brand, bridge]
+    # Versione fissata, non "windows-latest": un cambio di immagine non deve
+    # poter cambiare il compilatore sotto i piedi a una release.
+    runs-on: windows-2022
+    # VCPKG_ROOT a livello di workflow vale /opt/artifacts/vcpkg, che e' un
+    # percorso Linux: qui va sovrascritto per tutto il lavoro, non solo nei
+    # singoli passi, altrimenti build.py lo legge sbagliato.
+    env:
+      VCPKG_ROOT: C:\vcpkg-mtdesk
+      VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          submodules: false   # vedi il lavoro 1: hbb_common deve essere file normali
+
+      - name: Abilita il supporto ai collegamenti simbolici
+        # Senza, `flutter build windows` si ferma con "Building with plugins
+        # requires symlink support". Sul PC di sviluppo lo si attiva dalle
+        # impostazioni di Windows (Modalita' sviluppatore); qui si scrive
+        # direttamente la chiave di registro, perche' l'utente del runner ha i
+        # privilegi di amministratore.
+        shell: pwsh
+        run: |
+          $k = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
+          New-Item -Path $k -Force | Out-Null
+          New-ItemProperty -Path $k -Name AllowDevelopmentWithoutDevLicense -Value 1 -PropertyType DWord -Force | Out-Null
+          Write-Host "Modalita' sviluppatore attiva."
+
+      - name: Installa Rust ${{ env.RUST_VERSION }}
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: x86_64-pc-windows-msvc
+          components: "rustfmt"
+
+      - name: Cache delle dipendenze Rust
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          prefix-key: windows-2022
+          workspaces: client
+
+      - name: Installa LLVM ${{ env.LLVM_VERSION }}
+        # Serve a bindgen (il generatore di interfacce verso le librerie C) che
+        # usa libclang.dll. La variabile LIBCLANG_PATH e' obbligatoria: senza,
+        # il crate scrap non compila.
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $dir = 'C:\llvm'
+          $exe = "$env:RUNNER_TEMP\LLVM-${{ env.LLVM_VERSION }}-win64.exe"
+          Invoke-WebRequest -UseBasicParsing `
+            "https://github.com/llvm/llvm-project/releases/download/llvmorg-${{ env.LLVM_VERSION }}/LLVM-${{ env.LLVM_VERSION }}-win64.exe" `
+            -OutFile $exe
+          # Installer NSIS: /S silenzioso, /D=cartella (deve essere l'ultimo
+          # argomento, senza virgolette e senza spazi nel percorso).
+          Start-Process $exe -ArgumentList "/S /D=$dir" -Wait
+          if (-not (Test-Path "$dir\bin\libclang.dll")) { throw "LLVM non installato: manca libclang.dll" }
+          "LIBCLANG_PATH=$dir\bin" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "LLVM installato in $dir"
+
+      - name: Installa NASM
+        # Serve ai codec video (aom e libvpx hanno routine in assembler).
+        # Si prende dallo zip ufficiale: il pacchetto winget non ha un
+        # installer utilizzabile in modo non interattivo.
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $zip = "$env:RUNNER_TEMP\nasm.zip"
+          Invoke-WebRequest -UseBasicParsing `
+            "https://www.nasm.us/pub/nasm/releasebuilds/${{ env.NASM_VERSION }}/win64/nasm-${{ env.NASM_VERSION }}-win64.zip" `
+            -OutFile $zip
+          Expand-Archive $zip -DestinationPath "$env:RUNNER_TEMP\nasm-estratto" -Force
+          $inner = Get-ChildItem "$env:RUNNER_TEMP\nasm-estratto" -Directory | Select-Object -First 1
+          "$($inner.FullName)" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          & "$($inner.FullName)\nasm.exe" -v
+
+      - name: Prepara vcpkg
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11
+        with:
+          vcpkgDirectory: C:\vcpkg-mtdesk
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+          doNotCache: true
+
+      - name: Cache delle librerie native compilate
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
+        with:
+          path: C:\vcpkg-mtdesk\installed
+          key: vcpkg-x64-windows-static-${{ env.VCPKG_COMMIT_ID }}-${{ hashFiles('client/vcpkg.json', 'client/res/vcpkg/**') }}
+
+      - name: Costruisci le librerie native (ffmpeg, aom, opus, libvpx, libyuv)
+        # --host-triplet x64-windows-static NON e' facoltativo: ffmpeg e' una
+        # dipendenza "host" e senza questo finisce nel triplet dinamico, dopo
+        # di che hwcodec non trova libavcodec/avcodec.h e la build muore a
+        # meta'. E' lo stesso accorgimento del CI di RustDesk.
+        shell: pwsh
+        env:
+          VCPKG_ROOT: C:\vcpkg-mtdesk
+          VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static
+        run: |
+          & "$env:VCPKG_ROOT\vcpkg.exe" install `
+            --triplet x64-windows-static `
+            --host-triplet x64-windows-static `
+            --x-install-root="$env:VCPKG_ROOT\installed"
+          if ($LASTEXITCODE -ne 0) { throw "vcpkg install fallito con codice $LASTEXITCODE" }
+          if (-not (Test-Path "$env:VCPKG_ROOT\installed\x64-windows-static\include\libavcodec\avcodec.h")) {
+            throw "manca avcodec.h: il triplet host non e' quello statico"
+          }
+
+      - name: Installa Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@2783a3f08e1baf891508463f8c6653c258246225 # v2.12.0
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Applica la patch obbligatoria a Flutter
+        # Stessa patch del lavoro 3 e dello stesso file: corregge un difetto
+        # dentro Flutter 3.24.5 nel menu a tendina con ricerca. Il programma
+        # compila anche senza, quindi se saltasse non ci sarebbe nessun errore
+        # rosso: se ne accorgerebbe solo chi usa l'app. Per questo fallisce.
+        #
+        # NOTA: la patch al generatore di Visual Studio, necessaria sul PC di
+        # sviluppo, NON serve qui: i runner windows-2022 hanno Visual Studio
+        # 2022 (major 17), che Flutter 3.24.5 riconosce senza correzioni.
+        shell: bash
+        run: |
+          DIFF="$PWD/.github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff"
+          if [ ! -f "$DIFF" ]; then
+            echo "::error::patch non trovata: $DIFF"
+            exit 1
+          fi
+          FLUTTER_SDK_DIR="$(dirname "$(dirname "$(which flutter)")")"
+          echo "SDK di Flutter: $FLUTTER_SDK_DIR"
+          cd "$FLUTTER_SDK_DIR"
+          if git apply -R --check "$DIFF" 2>/dev/null; then
+            echo "La patch risulta GIA' applicata (SDK ripreso dalla cache): salto."
+          elif git apply "$DIFF"; then
+            echo "Patch applicata."
+          else
+            echo "::error::La patch di Flutter non si applica. Controlla che FLUTTER_VERSION sia ancora 3.24.5."
+            exit 1
+          fi
+          flutter --version
+
+      - name: Abilita il desktop Windows e scarica i pacchetti Dart
+        shell: pwsh
+        run: |
+          flutter config --enable-windows-desktop --no-analytics
+          Set-Location flutter
+          flutter pub get
+
+      - name: Recupera il bridge generato nel lavoro 2
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bridge-artifact
+          path: client     # rimette i file in client/src e client/flutter/lib
+
+      - name: Controlla che il bridge sia al suo posto
+        shell: bash
+        run: |
+          for f in src/bridge_generated.rs src/bridge_generated.io.rs flutter/lib/generated_bridge.dart flutter/lib/generated_bridge.freezed.dart; do
+            if [ ! -s "$f" ]; then
+              echo "::error::manca $f (artefatto del bridge non recuperato)"
+              exit 1
+            fi
+          done
+          ls -l src/bridge_generated.rs flutter/lib/generated_bridge.dart
+
+      - name: Dipendenze Python del packer
+        shell: pwsh
+        run: python -m pip install --quiet --upgrade pip brotli requests
+
+      - name: Compila (cargo + flutter + pacchetto autoestraente)
+        # build.py fa tre cose in fila:
+        #   1. cargo build --locked --release --lib  ->  librustdesk.dll
+        #   2. flutter build windows --release       ->  rustdesk.exe + dll
+        #   3. libs/portable/generate.py             ->  i due .exe finali
+        # Il terzo passo fino a novembre 2026 era rotto: invocava `pip3` e
+        # `python3`, che su Windows non esistono, e build.py si fermava SUBITO
+        # DOPO una compilazione riuscita senza impacchettare nulla.
+        shell: pwsh
+        env:
+          VCPKG_ROOT: C:\vcpkg-mtdesk
+          VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static
+        run: |
+          python build.py --flutter --hwcodec
+          if ($LASTEXITCODE -ne 0) { throw "build.py fallito con codice $LASTEXITCODE" }
+
+      - name: Verifica gli artefatti e calcola le impronte
+        # I due nomi NON sono arbitrari: su Windows il nome del file decide il
+        # comportamento del programma. Un nome che finisce in "install.exe" fa
+        # comparire la schermata di installazione (is_setup in src/common.rs);
+        # uno che contiene "-qs.exe" avvia la modalita' assistenza rapida
+        # (is_quick_support_exe in src/core_main.rs). Se questi nomi cambiano,
+        # cambia cosa fa il programma quando il cliente ci clicca sopra.
+        shell: pwsh
+        run: |
+          $attesi = @('MTDesk-windows-x86_64-install.exe', 'MTDesk-qs.exe')
+          foreach ($f in $attesi) {
+            if (-not (Test-Path $f)) {
+              Write-Host "::error::build.py non ha prodotto $f"
+              Get-ChildItem *.exe | Format-Table Name, Length
+              exit 1
+            }
+            $mb = [math]::Round((Get-Item $f).Length / 1MB, 1)
+            if ($mb -lt 10) {
+              Write-Host "::error::$f pesa solo $mb MB: il pacchetto e' incompleto"
+              exit 1
+            }
+            $h = (Get-FileHash $f -Algorithm SHA256).Hash.ToLower()
+            "$h *$f" | Out-File -FilePath "$f.sha256" -Encoding ascii -NoNewline
+            Write-Host "$f  $mb MB  sha256 $h"
+          }
+
+      - name: Conserva gli artefatti anche se la Release non viene creata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mtdesk-windows-x86_64
+          path: |
+            client/MTDesk-windows-x86_64-install.exe
+            client/MTDesk-qs.exe
+            client/MTDesk-windows-x86_64-install.exe.sha256
+            client/MTDesk-qs.exe.sha256
+          if-no-files-found: error
+
+      - name: Decidi il nome della Release
+        id: nome
+        shell: bash
+        env:
+          EVENTO: ${{ github.event_name }}
+          TAG_SCELTO: ${{ inputs.tag }}
+        run: |
+          if [ "$EVENTO" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            if [ -z "$TAG_SCELTO" ]; then
+              echo "::error::Non hai indicato nessun tag."
+              exit 1
+            fi
+            echo "tag=${TAG_SCELTO}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Allega i due .exe alla Release
+        # Questo passo AGGIUNGE allegati, non ne toglie: il .deb caricato dal
+        # lavoro 3 resta dov'e'. I due lavori sono indipendenti apposta, cosi'
+        # se la build Windows fallisce il pacchetto Ubuntu viene pubblicato lo
+        # stesso, e viceversa.
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        with:
+          tag_name: ${{ steps.nome.outputs.tag }}
+          prerelease: ${{ inputs.prerelease == true }}
+          make_latest: ${{ inputs.prerelease != true }}
+          files: |
+            client/MTDesk-windows-x86_64-install.exe
+            client/MTDesk-qs.exe
+            client/MTDesk-windows-x86_64-install.exe.sha256
+            client/MTDesk-qs.exe.sha256
