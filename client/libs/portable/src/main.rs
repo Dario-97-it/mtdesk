@@ -17,8 +17,17 @@ const APP_METADATA: &[u8] = include_bytes!("../app_metadata.toml");
 const APP_METADATA: &[u8] = &[];
 const APP_METADATA_CONFIG: &str = "meta.toml";
 const META_LINE_PREFIX_TIMESTAMP: &str = "timestamp = ";
-const APP_PREFIX: &str = "rustdesk";
-const APPNAME_RUNTIME_ENV_KEY: &str = "RUSTDESK_APPNAME";
+// MTDesk: nome della cartella in cui il pacchetto autoestraente scompatta i
+// propri file, sotto %LOCALAPPDATA%. Era "rustdesk": significava che sul PC del
+// cliente compariva una cartella col nome di un altro prodotto.
+const APP_PREFIX: &str = "MTDesk";
+// MTDesk: variabile d'ambiente con cui il pacchetto comunica al programma il
+// nome dell'eseguibile originale (serve a is_quick_support_exe e alla
+// configurazione dentro il nome del file).
+// DEVE restare identica a PORTABLE_APPNAME_RUNTIME_ENV_KEY in src/common.rs:
+// se le due stringhe non combaciano, il programma non legge il nome e la
+// modalita' Quick Support non si attiva piu'.
+const APPNAME_RUNTIME_ENV_KEY: &str = "MTDESK_APPNAME";
 #[cfg(windows)]
 const SET_FOREGROUND_WINDOW_ENV_KEY: &str = "SET_FOREGROUND_WINDOW";
 

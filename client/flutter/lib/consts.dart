@@ -247,7 +247,10 @@ const String kKeyReverseMouseWheel = "reverse_mouse_wheel";
 const String kMsgboxTextWaitingForImage = 'Connected, waiting for image...';
 
 // the executable name of the portable version
-const String kEnvPortableExecutable = "RUSTDESK_APPNAME";
+// MTDesk: DEVE combaciare con APPNAME_RUNTIME_ENV_KEY in
+// libs/portable/src/main.rs e con PORTABLE_APPNAME_RUNTIME_ENV_KEY in
+// src/common.rs. Sono tre punti da tenere allineati.
+const String kEnvPortableExecutable = "MTDESK_APPNAME";
 
 const Color kColorWarn = Color.fromARGB(255, 245, 133, 59);
 const Color kColorCanvas = Colors.black;

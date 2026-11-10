@@ -16,9 +16,16 @@ di trovarsi tramite l'ID a 9 cifre, esattamente come fanno i server di AnyDesk.
 | Indirizzo del centralino | `mtdesk.marketingtools.digital` |
 | Chiave pubblica attesa | `jc63wRwdyqs465Ndu5fP61fvB4x4CHdIAIIpw6YrQcw=` |
 | Porte | 21115/TCP, 21116/TCP, 21116/UDP, 21117/TCP |
-| Cartella da copiare sul server | `H:\2026\VISUAL STUDIO\MTDESK\deploy` |
+| Cartella da copiare sul server | `D:\2026\VISUAL STUDIO\MTDESK\deploy` |
 
 ---
+
+> **Nota sui percorsi.** In questa guida la cartella del progetto è
+> `D:6\VISUAL STUDIO\MTDESK`. Fino a novembre 2026 era su `H:`, e tutti i comandi
+> qui dentro puntavano a quel disco: dopo la formattazione del PC il progetto è su `D:` e i
+> comandi sono stati corretti. **Se un giorno sposti la cartella, i comandi con il percorso
+> scritto per esteso vanno aggiornati**, altrimenti falliscono con
+> `No such file or directory`.
 
 ## REGOLA D'ORO (leggila due volte)
 
@@ -50,7 +57,7 @@ al punto 1.6 ti faccio impostare un avviso di spesa a 1 euro come rete di sicure
 2. **Un numero di cellulare** dove ricevere un SMS.
 3. **Un indirizzo email** che controlli subito (serve confermare un link).
 4. **Accesso al pannello Cloudflare** del dominio `marketingtools.digital`.
-5. **Il PC Windows** con la cartella `H:\2026\VISUAL STUDIO\MTDESK\` (contiene le chiavi del
+5. **Il PC Windows** con la cartella `D:\2026\VISUAL STUDIO\MTDESK\` (contiene le chiavi del
    centralino: senza quelle, l'exe che hai gia' compilato non si collega piu').
 6. **Un secondo dispositivo** per il collaudo finale: un portatile che collegherai
    all'hotspot 4G del telefono. Serve al punto 10.5 e non e' rimandabile.
@@ -156,7 +163,7 @@ Sezione **Add SSH keys**. Lascia selezionato **"Generate a key pair for me"** e 
 > macchina e rifarla da zero.
 
 Fai adesso, non dopo:
-1. Crea la cartella `H:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\` (fuori da GitHub: la riga
+1. Crea la cartella `D:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\` (fuori da GitHub: la riga
    `*.key` e' gia' in `.gitignore`, quindi non finira' mai pubblicata).
 2. Spostaci il file e rinominalo `mtdesk-oracle.key`.
 3. **Fanne una seconda copia** su una chiavetta USB o nel tuo gestore di password.
@@ -244,7 +251,7 @@ Windows assegna ai file scaricati permessi "larghi", e SSH rifiuta di usare una 
 potrebbero leggere altri utenti. Preveniamolo. Incolla queste tre righe, una per volta:
 
 ```powershell
-cd "H:\2026\VISUAL STUDIO\MTDESK\chiavi-vps"
+cd "D:\2026\VISUAL STUDIO\MTDESK\chiavi-vps"
 icacls "mtdesk-oracle.key" /inheritance:r
 icacls "mtdesk-oracle.key" /grant:r "$($env:USERNAME):(R)"
 ```
@@ -258,7 +265,7 @@ e in sola lettura".
 Sostituisci `IL-TUO-IP` con il numero che hai scritto sul foglio al punto 2.7:
 
 ```powershell
-ssh -i "H:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" ubuntu@IL-TUO-IP
+ssh -i "D:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" ubuntu@IL-TUO-IP
 ```
 
 L'utente e' **`ubuntu`** (non `root`, non il tuo nome).
@@ -457,7 +464,7 @@ Quindi: **prima copi `data/`, poi accendi.** Mai il contrario.
 ### 7.2 Cosa c'e' davvero nella cartella (verificato)
 
 ```
-H:\2026\VISUAL STUDIO\MTDESK\deploy\
+D:\2026\VISUAL STUDIO\MTDESK\deploy\
   .env                    <- inizia con un PUNTO: contiene MTDESK_HOST
   .env.example            <- solo il modello, per chi clona il progetto
   CHIAVE-SERVER.txt       <- appunto con la chiave pubblica
@@ -477,7 +484,7 @@ Apri una finestra PowerShell **nuova** (se sei ancora collegato al server, quell
 scrivi `exit` o apri una seconda finestra). Sostituisci `IL-TUO-IP`:
 
 ```powershell
-scp -i "H:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" -r "H:\2026\VISUAL STUDIO\MTDESK\deploy" ubuntu@IL-TUO-IP:/home/ubuntu/
+scp -i "D:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" -r "D:\2026\VISUAL STUDIO\MTDESK\deploy" ubuntu@IL-TUO-IP:/home/ubuntu/
 ```
 
 Le **virgolette** attorno ai percorsi sono obbligatorie: `VISUAL STUDIO` contiene uno spazio e
@@ -503,13 +510,13 @@ con `ls -la`, ecco perche' uso quello) e nel secondo i tre file `db_v2.sqlite3`,
 **SE `.env` NON C'E'**, copialo da solo, nominandolo esplicitamente (da PowerShell):
 
 ```powershell
-scp -i "H:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" "H:\2026\VISUAL STUDIO\MTDESK\deploy\.env" ubuntu@IL-TUO-IP:/home/ubuntu/mtdesk/.env
+scp -i "D:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" "D:\2026\VISUAL STUDIO\MTDESK\deploy\.env" ubuntu@IL-TUO-IP:/home/ubuntu/mtdesk/.env
 ```
 
 **SE `data/` E' VUOTA O MANCA:**
 
 ```powershell
-scp -i "H:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" -r "H:\2026\VISUAL STUDIO\MTDESK\deploy\data" ubuntu@IL-TUO-IP:/home/ubuntu/mtdesk/
+scp -i "D:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" -r "D:\2026\VISUAL STUDIO\MTDESK\deploy\data" ubuntu@IL-TUO-IP:/home/ubuntu/mtdesk/
 ```
 
 ### 7.5 Controlla il contenuto di `.env`
@@ -631,7 +638,7 @@ docker compose up -d
 ```
 
 Ricontrolla: ora deve uscire `jc63wRwdyqs...`. La copia buona e originale delle chiavi resta
-sempre sul tuo PC in `H:\2026\VISUAL STUDIO\MTDESK\deploy\data\`, quindi non puoi perderle.
+sempre sul tuo PC in `D:\2026\VISUAL STUDIO\MTDESK\deploy\data\`, quindi non puoi perderle.
 
 **Se invece la chiave e' quella giusta**, il centralino e' in piedi e parla la stessa lingua
 dell'exe che hai gia' compilato. Il piu' e' fatto.
@@ -738,9 +745,9 @@ bloccando: la differenza fra "resta appeso e poi fallisce" e "fallisce subito" t
 ### Controllo 4 - Il client diventa verde
 Apri **MTDesk** sul tuo PC Windows. Va bene uno qualsiasi di questi due file:
 
-- `H:\2026\VISUAL STUDIO\MTDESK\MTDesk-1.4.9-x86_64.exe` (la versione portatile, quella che
+- `D:\2026\VISUAL STUDIO\MTDESK\MTDesk-1.4.9-x86_64.exe` (la versione portatile, quella che
   darai ai clienti);
-- oppure `H:\2026\VISUAL STUDIO\MTDESK\client\flutter\build\windows\x64\runner\Release\rustdesk.exe`
+- oppure `D:\2026\VISUAL STUDIO\MTDESK\client\flutter\build\windows\x64\runner\Release\rustdesk.exe`
   — **si', si chiama ancora `rustdesk.exe`**: e' il file appena compilato e il nome del file non e'
   stato cambiato, ma la finestra che si apre e' MTDesk e usa il tuo centralino.
 
@@ -925,7 +932,7 @@ Regola generale: **prima di cambiare qualcosa che funziona, salva il modo di rim
 
 ### 13.1 La cosa che non devi perdere mai
 Le chiavi in `deploy/data/`. Ne esistono due copie: quella sul server e **l'originale sul tuo PC**
-in `H:\2026\VISUAL STUDIO\MTDESK\deploy\data\`. Non cancellare quella sul PC per nessun motivo,
+in `D:\2026\VISUAL STUDIO\MTDESK\deploy\data\`. Non cancellare quella sul PC per nessun motivo,
 ed escludila dai "riordini". E' l'unica cosa in tutto questo progetto che non si puo' ricreare.
 
 Copia di sicurezza in piu', dal server:
@@ -1031,7 +1038,7 @@ free -m                            # memoria
 
 ```powershell
 # entrare nel server
-ssh -i "H:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" ubuntu@IL-TUO-IP
+ssh -i "D:\2026\VISUAL STUDIO\MTDESK\chiavi-vps\mtdesk-oracle.key" ubuntu@IL-TUO-IP
 
 # controlli di rete
 Resolve-DnsName mtdesk.marketingtools.digital -Type A
@@ -1061,13 +1068,13 @@ Test-NetConnection mtdesk.marketingtools.digital -Port 21116
 
 | File | Cosa contiene |
 |---|---|
-| `H:\2026\VISUAL STUDIO\MTDESK\deploy\docker-compose.yml` | la ricetta dei due container e le porte |
-| `H:\2026\VISUAL STUDIO\MTDESK\deploy\.env` | l'indirizzo pubblico del centralino |
-| `H:\2026\VISUAL STUDIO\MTDESK\deploy\data\` | **le chiavi**: la cosa da non perdere |
-| `H:\2026\VISUAL STUDIO\MTDESK\deploy\README-SERVER.md` | note tecniche sul server |
-| `H:\2026\VISUAL STUDIO\MTDESK\deploy\CLIENT-CONNESSIONE.md` | come si configura un client a mano |
-| `H:\2026\VISUAL STUDIO\MTDESK\deploy\CHIAVE-SERVER.txt` | promemoria della chiave pubblica |
-| `H:\2026\VISUAL STUDIO\MTDESK\landing\index.html` | la pagina di download per i clienti |
+| `D:\2026\VISUAL STUDIO\MTDESK\deploy\docker-compose.yml` | la ricetta dei due container e le porte |
+| `D:\2026\VISUAL STUDIO\MTDESK\deploy\.env` | l'indirizzo pubblico del centralino |
+| `D:\2026\VISUAL STUDIO\MTDESK\deploy\data\` | **le chiavi**: la cosa da non perdere |
+| `D:\2026\VISUAL STUDIO\MTDESK\deploy\README-SERVER.md` | note tecniche sul server |
+| `D:\2026\VISUAL STUDIO\MTDESK\deploy\CLIENT-CONNESSIONE.md` | come si configura un client a mano |
+| `D:\2026\VISUAL STUDIO\MTDESK\deploy\CHIAVE-SERVER.txt` | promemoria della chiave pubblica |
+| `D:\2026\VISUAL STUDIO\MTDESK\landing\index.html` | la pagina di download per i clienti |
 | `client\libs\hbb_common\src\config.rs` righe 117-118 | indirizzo e chiave **compilati dentro l'exe** |
 
 **Due note di allineamento**, cosi' non ti confondi leggendo anche gli altri file:

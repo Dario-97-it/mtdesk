@@ -130,7 +130,7 @@ La categoria di modifica riguarda la funzione di controllo versione nel core Rus
 UI da `src/flutter_ffi.rs` e mostrate dal banner lato Flutter in `flutter/lib/`):
 il controllo va **ripuntato sulle Release di MTDesk** — cioè sul repository
 `https://github.com/Dario-97-it/mtdesk` — oppure disattivato del tutto, così che il banner
-proponga l'aggiornamento corretto (`MTDesk-windows-x86_64.exe`, `MTDesk-qs.exe`,
+proponga l'aggiornamento corretto (`MTDesk-windows-x86_64-install.exe`, `MTDesk-qs.exe`,
 `mtdesk-ubuntu-amd64.deb`) e nessun dato esca verso `api.rustdesk.com`.
 
 Nota tecnica utile per chi rimette mano al codice: `check_software_update` esce subito se

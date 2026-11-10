@@ -22,7 +22,7 @@ Non serve registrarsi, non serve una licenza, non ci sono limiti di tempo.
 
 | Sistema | File da scaricare | Quando usarlo |
 |---|---|---|
-| **Windows** 10/11 (64 bit) | [`MTDesk-windows-x86_64.exe`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-windows-x86_64.exe) | Versione completa: si installa e resta sul PC. |
+| **Windows** 10/11 (64 bit) | [`MTDesk-windows-x86_64-install.exe`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-windows-x86_64-install.exe) | Versione completa: si installa e resta sul PC. |
 | **Windows** — assistenza veloce | [`MTDesk-qs.exe`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-qs.exe) | "Quick Support": si apre e basta, **non installa niente**. Ideale per il cliente che ha bisogno di aiuto una volta sola. |
 | **Ubuntu / Debian** (64 bit) | [`mtdesk-ubuntu-amd64.deb`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/mtdesk-ubuntu-amd64.deb) | Doppio clic sul file, oppure da terminale: `sudo apt install ./mtdesk-ubuntu-amd64.deb` |
 
@@ -100,7 +100,7 @@ file originale e non una copia manomessa.
 - **Windows**: l'impronta è riportata nelle note della release. Per calcolare quella del file
   che hai scaricato, apri PowerShell nella cartella dei download:
   ```powershell
-  Get-FileHash .\MTDesk-windows-x86_64.exe -Algorithm SHA256
+  Get-FileHash .\MTDesk-windows-x86_64-install.exe -Algorithm SHA256
   ```
   Le due stringhe devono coincidere (maiuscole/minuscole non contano).
 

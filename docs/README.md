@@ -18,7 +18,7 @@ l'avviso di aggiornamento e il pulsante li porta su un download che non
 esiste ancora.
 
 1. Crea la Release su GitHub allegando i tre file con i **nomi esatti**
-   `MTDesk-windows-x86_64.exe`, `MTDesk-qs.exe`, `mtdesk-ubuntu-amd64.deb`.
+   `MTDesk-windows-x86_64-install.exe`, `MTDesk-qs.exe`, `mtdesk-ubuntu-amd64.deb`.
    I due file Windows li carichi tu a mano (il pacchetto Ubuntu lo allega da solo
    GitHub Actions). **Prima di caricarli**, calcola la loro impronta SHA-256 e
    incollala nelle note della release: il README di root dice ai clienti di
@@ -26,7 +26,7 @@ esiste ancora.
    In PowerShell, nella cartella dove stanno i due file:
 
    ```powershell
-   Get-FileHash .\MTDesk-windows-x86_64.exe, .\MTDesk-qs.exe -Algorithm SHA256 |
+   Get-FileHash .\MTDesk-windows-x86_64-install.exe, .\MTDesk-qs.exe -Algorithm SHA256 |
        Format-List Path, Hash
    ```
 

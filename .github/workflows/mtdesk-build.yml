@@ -670,7 +670,7 @@ jobs:
 
       - name: Crea o aggiorna la Release e allega il pacchetto
         # Questa azione NON cancella gli allegati gia' presenti nella Release:
-        # puoi caricare a mano MTDesk-windows-x86_64.exe e MTDesk-qs.exe nella
+        # puoi caricare a mano MTDesk-windows-x86_64-install.exe e MTDesk-qs.exe nella
         # stessa Release e restano dove sono. Questo workflow sostituisce solo
         # il .deb e il suo file .sha256.
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
@@ -694,7 +694,7 @@ jobs:
 
             | Sistema | File | Come arriva qui |
             |---|---|---|
-            | Windows 10/11 (64 bit) | `MTDesk-windows-x86_64.exe` | caricato a mano |
+            | Windows 10/11 (64 bit) | `MTDesk-windows-x86_64-install.exe` | caricato a mano |
             | Windows, avvio rapido senza installare | `MTDesk-qs.exe` | caricato a mano |
             | Ubuntu 22.04 / 24.04 e Debian 12 (64 bit) | `mtdesk-ubuntu-amd64.deb` | automatico |
 
@@ -757,7 +757,7 @@ jobs:
 #      powershell -ExecutionPolicy Bypass -File client\scripts\build-mtdesk.ps1
 #  e i file prodotti si caricano a mano nella Release creata da questo
 #  workflow, con questi nomi esatti:
-#      MTDesk-windows-x86_64.exe
+#      MTDesk-windows-x86_64-install.exe
 #      MTDesk-qs.exe
 #  I link /releases/latest/download/<nome> continuano a funzionare, perche'
 #  questo workflow non cancella gli allegati che trova gia' nella Release.

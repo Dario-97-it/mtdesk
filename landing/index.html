@@ -386,24 +386,42 @@ footer a:hover{color:#BFF3F9}
   <!-- ================================================== DOWNLOAD ========== -->
   <section class="card" aria-labelledby="t-download">
     <h2 class="card-title" id="t-download"><span class="dot" aria-hidden="true"></span>1. Scarica il programma</h2>
-    <p class="card-sub">Scegli il pulsante del tuo computer. Se non sai quale sia, quasi sicuramente è Windows.</p>
+    <p class="card-sub">Se non sai che computer hai, quasi sicuramente è Windows: usa il primo pulsante.</p>
+
+    <a class="btn btn-main"
+       href="https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-qs.exe">
+      <span class="btn-label">Scarica per Windows — assistenza adesso</span>
+      <span class="btn-note">MTDesk-qs.exe · doppio clic e si apre. Non installa niente.</span>
+    </a>
+
+    <p class="dl-foot" style="margin:14px 0 4px">
+      Ti serve solo questo. Gli altri due pulsanti servono in casi particolari.
+    </p>
 
     <div class="dl-grid">
-      <a class="btn btn-main"
-         href="https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-windows-x86_64.exe">
-        <span class="btn-label">Scarica per Windows</span>
-        <span class="btn-note">MTDesk-windows-x86_64.exe</span>
+      <a class="btn"
+         href="https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-windows-x86_64-install.exe">
+        <span class="btn-label">Windows — installa e resta</span>
+        <span class="btn-note">MTDesk-windows-x86_64-install.exe · da usare solo se ti è stato chiesto, per l'assistenza che si ripete</span>
       </a>
       <a class="btn"
          href="https://github.com/Dario-97-it/mtdesk/releases/latest/download/mtdesk-ubuntu-amd64.deb">
-        <span class="btn-label">Scarica per Ubuntu / Linux</span>
+        <span class="btn-label">Ubuntu / Linux</span>
         <span class="btn-note">mtdesk-ubuntu-amd64.deb</span>
       </a>
     </div>
 
     <p class="dl-foot">
       Il file arriva nella cartella <b>Download</b> (su Ubuntu si chiama <b>Scaricati</b>).
-      Su Windows basta fare doppio clic sul file scaricato: si apre e basta, non si installa.
+      Su Windows fai doppio clic sul file scaricato.
+    </p>
+    <p class="dl-foot">
+      <b>Differenza fra i due file per Windows, in una riga.</b>
+      Il primo (<i>assistenza adesso</i>) si apre, mostra i codici e si chiude: non si installa e
+      non si avvia da solo quando riaccendi il computer — scompatta i suoi file in una cartella
+      temporanea del tuo profilo, che puoi cancellare quando vuoi.
+      Il secondo (<i>installa e resta</i>) chiede il permesso di installarsi e rimane sul computer:
+      serve soltanto se l'assistenza deve poter entrare più volte nel tempo.
     </p>
   </section>
 
@@ -507,9 +525,14 @@ sudo apt install ./mtdesk-ubuntu-amd64.deb</code></pre>
       <li><b>Su Windows funziona solo con il programma aperto.</b> Finché la finestra di MTDesk è aperta il
           collegamento è possibile; quando la chiudi, la connessione cade e nessuno può più entrare.
           Per ricominciare servono un nuovo ID e una nuova password.</li>
-      <li><b>Su Windows non installa nulla in modo permanente.</b> Il file che scarichi è una versione
-          portatile: non aggiunge programmi all'avvio del computer e non lascia servizi in esecuzione.
-          Chiuso MTDesk il computer torna come prima, e se vuoi puoi anche cancellare il file scaricato.</li>
+      <li><b>Su Windows, con il file "assistenza adesso", non si installa nulla.</b>
+          <code>MTDesk-qs.exe</code> non aggiunge programmi all'avvio del computer e non lascia servizi
+          in esecuzione: chiuso MTDesk il collegamento non è più possibile, e puoi cancellare il file
+          scaricato. Per funzionare scompatta i propri file in una cartella temporanea dentro il tuo
+          profilo utente; se vuoi rimuovere anche quella, si trova in
+          <code>%LOCALAPPDATA%\MTDesk</code> e si può cancellare a programma chiuso.
+          <br>L'altro file, <code>…-install.exe</code>, fa il contrario: si installa e resta. Scaricalo
+          solo se l'assistenza te l'ha chiesto.</li>
       <li><b>Su Ubuntu, invece, il programma resta installato.</b> Il pacchetto <code>.deb</code> mette
           MTDesk fra le applicazioni e lo fa partire insieme al computer, così la volta dopo sei pronto
           subito. Anche in quel caso nessuno si collega senza la password che leggi sullo schermo. Se non
