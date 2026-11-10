@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MTDesk - icona vettoriale (hicolor/scalable).
+  Generata da brand/make_linux_icons.py. Non modificare a mano:
+  rigenera lo script, cosi' resta allineata alle PNG.
+  Colori: palette Marketing Tools (brand/BRAND-MTDESK.md).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"
+     viewBox="0 0 1024 1024" role="img" aria-label="MTDesk">
+  <title>MTDesk</title>
+  <defs>
+    <!-- sfondo scuro, dall'alto verso il basso -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#141424"/>
+      <stop offset="100%" stop-color="#080816"/>
+    </linearGradient>
+    <!-- aloni d'angolo: ciano in alto a sinistra, viola in basso a destra -->
+    <radialGradient id="glowC" cx="12%" cy="12%" r="75%">
+      <stop offset="0%" stop-color="#00BCD4" stop-opacity="0.27"/>
+      <stop offset="100%" stop-color="#00BCD4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowP" cx="90%" cy="92%" r="70%">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Gradiente firma del brand, inclinato a 135 gradi (da alto-sinistra a
+         basso-destra). gradientUnits="userSpaceOnUse" e' importante: senza,
+         il gradiente si schiaccerebbe sulle sole lettere e comparirebbero
+         verde e arancio, mentre nell'icona vera le lettere prendono solo la
+         parte centrale (ciano -> blu -> viola), come nella PNG. -->
+    <linearGradient id="brand" gradientUnits="userSpaceOnUse"
+                    x1="0" y1="0" x2="1024" y2="1024">
+      <stop offset="0%" stop-color="#2ECC71"/>
+      <stop offset="25%" stop-color="#00BCD4"/>
+      <stop offset="50%" stop-color="#2196F3"/>
+      <stop offset="75%" stop-color="#9C27B0"/>
+      <stop offset="100%" stop-color="#FF9800"/>
+    </linearGradient>
+    <!-- leggero bagliore ciano dietro le lettere -->
+    <filter id="soft" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+    <!-- tutto resta dentro il quadrato con gli angoli arrotondati -->
+    <clipPath id="card">
+      <rect x="0" y="0" width="1024" height="1024" rx="230" ry="230"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#card)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <rect width="1024" height="1024" fill="url(#glowC)"/>
+    <rect width="1024" height="1024" fill="url(#glowP)"/>
+    <path d="M566.6376811594203 680.8104145601617H486.8608021570611V466.23811931243677Q486.8608021570611 431.4764071452645 489.8618132794069 389.4622514324233H487.861139197843Q481.6090326929559 422.4733737782271 476.6073474890462 436.97826086956513L392.57903606336373 680.8104145601617H326.55679137175605L241.02797438490063 439.47910347152Q237.52679474216387 429.7258173238961 229.77418267610386 389.4622514324233H227.5234243343445Q230.77451971688578 442.4801145938658 230.77451971688578 482.49359622514316V680.8104145601617H158.00000000000006V322.18958543983814H276.2898550724638L349.56454330974054 534.7612066059992Q358.31749241658247 560.2698011459386 362.3188405797102 586.0284799460734H363.8193461408831Q370.57162116616115 556.2684529828108 378.0741489720257 534.2610380856083L451.34883720930236 322.18958543983814H566.6376811594203ZM900.0 387.96174587125034H797.7155375800471V680.8104145601617H716.6882372767104V387.96174587125034H614.9039433771486V322.18958543983814H900.0Z" fill="#00BCD4" fill-opacity="0.55" filter="url(#soft)"/>
+    <path d="M566.6376811594203 680.8104145601617H486.8608021570611V466.23811931243677Q486.8608021570611 431.4764071452645 489.8618132794069 389.4622514324233H487.861139197843Q481.6090326929559 422.4733737782271 476.6073474890462 436.97826086956513L392.57903606336373 680.8104145601617H326.55679137175605L241.02797438490063 439.47910347152Q237.52679474216387 429.7258173238961 229.77418267610386 389.4622514324233H227.5234243343445Q230.77451971688578 442.4801145938658 230.77451971688578 482.49359622514316V680.8104145601617H158.00000000000006V322.18958543983814H276.2898550724638L349.56454330974054 534.7612066059992Q358.31749241658247 560.2698011459386 362.3188405797102 586.0284799460734H363.8193461408831Q370.57162116616115 556.2684529828108 378.0741489720257 534.2610380856083L451.34883720930236 322.18958543983814H566.6376811594203ZM900.0 387.96174587125034H797.7155375800471V680.8104145601617H716.6882372767104V387.96174587125034H614.9039433771486V322.18958543983814H900.0Z" fill="url(#brand)"/>
+  </g>
+  <!-- bordo vetro sottile -->
+  <rect x="6" y="6" width="1012" height="1012" rx="226" ry="226"
+        fill="none" stroke="#FFFFFF" stroke-opacity="0.125" stroke-width="3"/>
+</svg>

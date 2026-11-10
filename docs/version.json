@@ -1,0 +1,9 @@
+{
+  "version": "1.4.9",
+  "notes_url": "https://github.com/Dario-97-it/mtdesk/releases/latest",
+  "download": {
+    "windows": "https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-windows-x86_64.exe",
+    "windows_qs": "https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-qs.exe",
+    "ubuntu": "https://github.com/Dario-97-it/mtdesk/releases/latest/download/mtdesk-ubuntu-amd64.deb"
+  }
+}

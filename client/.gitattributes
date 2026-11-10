@@ -1,0 +1,22 @@
+* text=auto
+
+# ---------------------------------------------------------------------
+# MTDesk - file del pacchetto Ubuntu: SEMPRE fine-riga Linux (LF)
+# ---------------------------------------------------------------------
+# Windows termina le righe di testo con due caratteri invisibili (CR+LF),
+# Linux con uno solo (LF). I file qui sotto vengono letti da Ubuntu, non da
+# Windows. Se in coda alla prima riga di uno degli script di installazione
+# ci finisce il carattere invisibile di Windows, Ubuntu cerca un programma
+# chiamato "/bin/bash<invisibile>", non lo trova, e l'installazione del
+# pacchetto .deb fallisce con "bad interpreter". Il pacchetto si
+# compilerebbe benissimo e non si installerebbe su nessun computer.
+# "eol=lf" dice a git: questi file tienili sempre in formato Linux, anche
+# quando li apri o li salvi da Windows.
+res/DEBIAN/preinst   text eol=lf
+res/DEBIAN/postinst  text eol=lf
+res/DEBIAN/prerm     text eol=lf
+res/DEBIAN/postrm    text eol=lf
+res/*.desktop        text eol=lf
+res/*.service        text eol=lf
+# Stesso motivo per gli altri script che girano solo su Linux.
+*.sh                 text eol=lf

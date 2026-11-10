@@ -1,0 +1,767 @@
+# =============================================================================
+#  MTDesk - Compilazione automatica Ubuntu + pubblicazione della Release
+# =============================================================================
+#
+#  A COSA SERVE
+#  Questo file dice a GitHub: "quando te lo chiedo io, prendi il codice di
+#  MTDesk, compilalo su un computer Linux che metti a disposizione tu, e
+#  allega il pacchetto .deb finito alla pagina delle Release".
+#  Cosi' il .deb per Ubuntu esce senza che serva un PC Linux in casa.
+#
+#  QUANTO COSTA
+#  Zero. Sui repository pubblici i "runner standard" di GitHub (ubuntu-22.04)
+#  sono gratuiti e senza limite di minuti. Qui NON si usano i "larger runner"
+#  (piu' potenti ma a pagamento anche sui repo pubblici).
+#
+#  SERVONO PASSWORD O CHIAVI SEGRETE?
+#  No. Nessun secrets.* a parte GITHUB_TOKEN, che GitHub genera da solo a ogni
+#  esecuzione. Non si firma niente (non abbiamo certificati di firma) e non si
+#  carica niente su server esterni.
+#
+#  PERCHE' NON COMPILA ANCHE WINDOWS: spiegato nel blocco di commenti in fondo
+#  al file. In breve: Windows si continua a compilare in locale con
+#  client/scripts/build-mtdesk.ps1, che funziona. Il .exe si carica a mano
+#  nella stessa Release e i link di download restano validi.
+#
+#  Tutte le versioni qui sotto sono COPIATE dal CI ufficiale di RustDesk
+#  (client/.github/workflows/flutter-build.yml e bridge.yml): sono vincoli di
+#  compatibilita', non scelte. Non aggiornarle "perche' esiste una piu' nuova".
+# =============================================================================
+
+name: MTDesk - Build e Release
+
+on:
+  # 1) Bottone manuale: Actions -> "MTDesk - Build e Release" -> "Run workflow"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Nome del tag/Release da creare o aggiornare (es. v1.4.9)"
+        type: string
+        required: true
+        default: "v1.4.9"
+      prerelease:
+        description: "Pubblica come bozza di prova (prerelease): i link /releases/latest/ NON punteranno a questa"
+        type: boolean
+        default: false
+  # 2) Automatico: quando spingi un tag che comincia per "v"
+  #    (esempio: git tag v1.4.9 && git push origin v1.4.9)
+  push:
+    tags:
+      - "v*"
+
+# Permesso minimo indispensabile: scrivere nelle Release. Niente altro.
+permissions:
+  contents: write
+
+env:
+  # --- Versioni delle toolchain (da client/.github/workflows/flutter-build.yml) ---
+  RUST_VERSION: "1.75"            # riga 22 upstream. NON alzare: 1.78+ cambia l'ABI dei numeri i128
+  FLUTTER_VERSION: "3.24.5"       # riga 28 upstream
+  # --- Versioni del generatore del "ponte" Dart<->Rust (da client/.github/workflows/bridge.yml) ---
+  BRIDGE_FLUTTER_VERSION: "3.22.3"      # upstream genera il bridge con 3.22.3 anche se poi compila con 3.24.5
+  FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
+  CARGO_EXPAND_VERSION: "1.0.95"
+  # --- Librerie native C/C++ (ffmpeg, aom, opus, libvpx, libyuv) ---
+  VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"   # riga 45 upstream
+  VCPKG_ROOT: /opt/artifacts/vcpkg
+  VCPKG_TRIPLET: x64-linux
+  # --- Nome definitivo del pacchetto pubblicato ---
+  # Nome STABILE, senza numero di versione: la landing usa
+  # /releases/latest/download/mtdesk-ubuntu-amd64.deb e si romperebbe se cambiasse.
+  NOME_DEB: "mtdesk-ubuntu-amd64.deb"
+
+jobs:
+
+  # ===========================================================================
+  #  LAVORO 1 - Controllo del brand (dura ~30 secondi, ma puo' salvare 2 ore)
+  # ===========================================================================
+  #  PERCHE' ESISTE, in parole semplici:
+  #  il nome dell'app, l'indirizzo del centralino e la chiave pubblica NON
+  #  stanno nel codice principale: stanno in client/libs/hbb_common, che nel
+  #  progetto RustDesk e' un "sottomodulo", cioe' una cartella che punta a un
+  #  ALTRO repository. Se quella cartella non viene pubblicata come file
+  #  normali, GitHub scarica la versione ORIGINALE di RustDesk: il programma
+  #  che ne esce si chiama "RustDesk" e si collega ai server di RustDesk.
+  #  Questo controllo si mette in mezzo: se le tre righe nostre non ci sono,
+  #  ferma tutto subito invece di sfornare un pacchetto sbagliato.
+  # ===========================================================================
+  controllo-brand:
+    name: 1. Controllo brand e centralino
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # Volutamente SENZA sottomoduli: hbb_common deve essere presente come
+          # file normali nel repository, non come puntatore a RustDesk.
+          submodules: false
+
+      - name: Verifica che il brand MTDesk sia davvero nel codice
+        run: |
+          CONFIG="client/libs/hbb_common/src/config.rs"
+
+          if [ ! -f "$CONFIG" ]; then
+            echo "::error::Manca il file $CONFIG"
+            echo "Causa quasi certa: libs/hbb_common e' ancora un sottomodulo git e non e'"
+            echo "stato pubblicato come file normali. Vedi la sezione 'sottomodulo' in"
+            echo "BUILD-UBUNTU.md per sistemarlo una volta per sempre."
+            exit 1
+          fi
+
+          errori=0
+          controlla() {
+            # $1 = testo che DEVE esserci, $2 = cosa succederebbe se manca
+            if grep -qF "$1" "$CONFIG"; then
+              echo "OK - trovato: $1"
+            else
+              echo "::error::In $CONFIG non trovo \"$1\" -> $2"
+              errori=1
+            fi
+          }
+
+          controlla 'MTDesk'                                       'il nome dell app (APP_NAME) e tornato RustDesk'
+          controlla 'mtdesk.marketingtools.digital'                'il client non punterebbe al TUO centralino'
+          controlla 'jc63wRwdyqs465Ndu5fP61fvB4x4CHdIAIIpw6YrQcw=' 'manca la chiave pubblica del tuo centralino'
+
+          if [ "$errori" != "0" ]; then
+            echo ""
+            echo "Build fermata di proposito: un pacchetto compilato in questo stato si"
+            echo "chiamerebbe RustDesk e si collegherebbe ai server pubblici di RustDesk."
+            exit 1
+          fi
+          echo "Controllo brand superato."
+
+  # ===========================================================================
+  #  LAVORO 2 - Genera il "ponte" (bridge) fra Dart e Rust
+  # ===========================================================================
+  #  COS'E': MTDesk e' meta' in Rust (la parte che cattura lo schermo e parla
+  #  in rete) e meta' in Dart/Flutter (le finestre e i bottoni). Le due meta'
+  #  si parlano attraverso file generati automaticamente. Questi file NON sono
+  #  nel repository (sono elencati in .gitignore), quindi vanno rigenerati qui.
+  #
+  #  PERCHE' UN LAVORO SEPARATO: il generatore vuole Flutter 3.22.3 e ha
+  #  bisogno di abbassare una dipendenza (extended_text) nel file pubspec.yaml.
+  #  Tenendolo separato, quella modifica non "sporca" la compilazione vera, che
+  #  usa Flutter 3.24.5. E' esattamente come fa RustDesk in bridge.yml.
+  # ===========================================================================
+  bridge:
+    name: 2. Genera il bridge Dart-Rust
+    needs: [controllo-brand]
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: client   # il fork sta nella sottocartella client/
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          submodules: false
+
+      - name: Installa i pacchetti di sistema necessari al generatore
+        # Lista presa da client/.github/workflows/bridge.yml. Su Ubuntu 22.04 i
+        # nomi generici libclang-dev / llvm-dev sostituiscono i "-10-" del vecchio CI.
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            clang \
+            cmake \
+            curl \
+            gcc \
+            git \
+            g++ \
+            libclang-dev \
+            libgtk-3-dev \
+            llvm-dev \
+            nasm \
+            ninja-build \
+            pkg-config \
+            wget
+
+      - name: Installa Rust ${{ env.RUST_VERSION }}
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: x86_64-unknown-linux-gnu
+          components: "rustfmt"
+
+      - name: Cache di cargo (evita di riscaricare e ricompilare le dipendenze)
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          prefix-key: bridge-ubuntu-22.04
+          workspaces: client
+
+      - name: Cache dei due programmi del generatore
+        # flutter_rust_bridge_codegen e cargo-expand si "installano" compilandoli:
+        # 10-15 minuti. Se li abbiamo gia', li riusiamo tali e quali.
+        id: cache-frb
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
+        with:
+          path: |
+            ~/.cargo/bin/flutter_rust_bridge_codegen
+            ~/.cargo/bin/cargo-expand
+          key: frb-${{ env.FLUTTER_RUST_BRIDGE_VERSION }}-expand-${{ env.CARGO_EXPAND_VERSION }}-rust-${{ env.RUST_VERSION }}-ubuntu-22.04
+
+      - name: Installa Flutter ${{ env.BRIDGE_FLUTTER_VERSION }}
+        uses: subosito/flutter-action@2783a3f08e1baf891508463f8c6653c258246225 # v2.12.0
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.BRIDGE_FLUTTER_VERSION }}
+          cache: true
+
+      - name: Compila i due programmi del generatore (solo se non erano in cache)
+        if: steps.cache-frb.outputs.cache-hit != 'true'
+        run: |
+          cargo install cargo-expand --version ${{ env.CARGO_EXPAND_VERSION }} --locked
+          cargo install flutter_rust_bridge_codegen --version ${{ env.FLUTTER_RUST_BRIDGE_VERSION }} --features "uuid" --locked
+
+      - name: Prepara le dipendenze Dart
+        # L'abbassamento di extended_text (14 -> 13) e' quello che fa RustDesk in
+        # bridge.yml: con Flutter 3.22.3 la versione 14 non si risolve.
+        # Questa modifica resta SOLO dentro questo lavoro, non torna nel repo.
+        run: |
+          sed -i -e 's/extended_text: 14.0.0/extended_text: 13.0.0/g' flutter/pubspec.yaml
+          cd flutter && flutter pub get
+
+      - name: Genera il bridge
+        run: |
+          ~/.cargo/bin/flutter_rust_bridge_codegen \
+            --rust-input ./src/flutter_ffi.rs \
+            --dart-output ./flutter/lib/generated_bridge.dart \
+            --c-output ./flutter/macos/Runner/bridge_generated.h
+          cp ./flutter/macos/Runner/bridge_generated.h ./flutter/ios/Runner/bridge_generated.h
+          # Correzione che build.py applica sempre (funzione ffi_bindgen_function_refactor):
+          # il generatore scrive un tipo sbagliato per il valore di ritorno di una callback.
+          sed -i 's/ffi.NativeFunction<ffi.Bool Function(DartPort/ffi.NativeFunction<ffi.Uint8 Function(DartPort/g' flutter/lib/generated_bridge.dart
+          # Verifica subito che i file siano usciti, invece di scoprirlo dopo un'ora.
+          # generated_bridge.freezed.dart e' nell'elenco perche' NON e' un extra:
+          # generated_bridge.dart lo richiama con "part 'generated_bridge.freezed.dart';"
+          # (riga 14). Se manca, la compilazione Flutter si ferma un'ora piu' tardi
+          # con un errore oscuro. Meglio accorgersene adesso.
+          for f in src/bridge_generated.rs src/bridge_generated.io.rs flutter/lib/generated_bridge.dart flutter/lib/generated_bridge.freezed.dart; do
+            if [ ! -s "$f" ]; then
+              echo "::error::Il generatore non ha prodotto $f"
+              exit 1
+            fi
+          done
+          ls -l src/bridge_generated.rs src/bridge_generated.io.rs flutter/lib/generated_bridge.dart flutter/lib/generated_bridge.freezed.dart
+
+      - name: Metti da parte i file generati per il lavoro successivo
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bridge-artifact
+          # ATTENZIONE: questi percorsi partono dalla radice del repository, non
+          # da client/ (working-directory vale solo per i comandi "run").
+          path: |
+            client/src/bridge_generated.rs
+            client/src/bridge_generated.io.rs
+            client/flutter/lib/generated_bridge.dart
+            client/flutter/lib/generated_bridge.freezed.dart
+            client/flutter/macos/Runner/bridge_generated.h
+            client/flutter/ios/Runner/bridge_generated.h
+          if-no-files-found: error
+
+  # ===========================================================================
+  #  LAVORO 3 - Compila MTDesk per Ubuntu e pubblica il .deb
+  # ===========================================================================
+  #  La prima volta dura fra 1 e 2 ore (deve costruire ffmpeg da zero), poi
+  #  molto meno grazie alle cache. Il limite di GitHub e' 6 ore per lavoro.
+  # ===========================================================================
+  ubuntu:
+    name: 3. Compila per Ubuntu (amd64)
+    # Perche' ubuntu-22.04 e non ubuntu-latest: un programma compilato su una
+    # certa versione di Ubuntu funziona su quella e sulle successive, non sulle
+    # precedenti. Compilando su 22.04 il .deb si installa su Ubuntu 22.04,
+    # 24.04 e successive (e su Debian 12). Se un giorno GitHub togliesse
+    # l'etichetta ubuntu-22.04, basta scrivere ubuntu-latest qui e nei lavori
+    # 1 e 2: il .deb funzionera' solo da Ubuntu 24.04 in su.
+    runs-on: ubuntu-22.04
+    needs: [controllo-brand, bridge]
+    defaults:
+      run:
+        working-directory: client
+    env:
+      # Architettura scritta dentro il pacchetto Debian (build.py legge DEB_ARCH)
+      DEB_ARCH: amd64
+      # vcpkg deve costruire anche gli strumenti "per questa macchina" con lo
+      # stesso triplet, altrimenti ffmpeg finisce nella cartella sbagliata e la
+      # compilazione non trova libavcodec.h (problema noto: vedi il punto 3 in
+      # fondo a client/BUILD-WINDOWS.md).
+      VCPKG_DEFAULT_HOST_TRIPLET: x64-linux
+    steps:
+
+      # --- Preparazione della macchina -------------------------------------
+      - name: Fai spazio sul disco
+        # Il runner ha circa 14 GB liberi: ffmpeg + Rust + Flutter non ci stanno.
+        # Questa azione cancella software preinstallato che a noi non serve.
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      - name: Aggiungi 12 GB di memoria virtuale (swap)
+        # Il compilatore di Rust in modalita' release consuma molta RAM: senza
+        # swap il lavoro viene ucciso a meta' con un errore "signal 9 (SIGKILL)"
+        # che non spiega niente. Stesso valore usato dal CI di RustDesk.
+        uses: pierotofy/set-swap-space@49819abfb41bd9b44fb781159c033dba90353a7c # v1.0
+        with:
+          swap-size-gb: 12
+
+      - name: Scarica il codice
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          submodules: false   # vedi il lavoro 1: hbb_common deve essere file normali
+
+      - name: Installa le librerie di sviluppo di Ubuntu
+        # Lista presa dal CI di RustDesk (righe ~1561-1580 di flutter-build.yml,
+        # il blocco "install:" del job build-rustdesk-linux) piu' le due righe in
+        # piu' che usa ci.yml (libunwind-dev, libvdpau-dev).
+        # Adattamenti per Ubuntu 22.04: libclang-10-dev -> libclang-dev e
+        # llvm-10-dev -> llvm-dev, perche' i pacchetti "-10" non esistono piu'.
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            build-essential \
+            clang \
+            cmake \
+            curl \
+            gcc \
+            git \
+            g++ \
+            libasound2-dev \
+            libayatana-appindicator3-dev \
+            libclang-dev \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            libgtk-3-dev \
+            libpulse-dev \
+            libssl-dev \
+            libunwind-dev \
+            libva-dev \
+            libvdpau-dev \
+            libxcb-randr0-dev \
+            libxcb-shape0-dev \
+            libxcb-xfixes0-dev \
+            libxdo-dev \
+            libxfixes-dev \
+            llvm-dev \
+            nasm \
+            ninja-build \
+            pkg-config \
+            python3 \
+            tree \
+            unzip \
+            wget \
+            xz-utils
+          # Opus lo costruiamo noi con vcpkg: se resta anche la versione di
+          # sistema, il linker puo' pescare quella sbagliata (lo fa anche upstream).
+          sudo apt-get remove -y libopus-dev || true
+
+      # --- Librerie native C/C++ con vcpkg ---------------------------------
+      - name: Prepara la cartella di vcpkg
+        # /opt appartiene a root: la creiamo e ne diamo la proprieta' all'utente
+        # del runner, altrimenti la cache non riesce a scriverci dentro.
+        run: |
+          sudo mkdir -p /opt/artifacts
+          # id -un / id -gn invece di $USER: e' il modo che funziona sempre,
+          # anche se la variabile $USER non fosse impostata.
+          sudo chown -R "$(id -un)":"$(id -gn)" /opt/artifacts
+
+      - name: Scarica vcpkg alla revisione esatta del CI di RustDesk
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11
+        with:
+          vcpkgDirectory: /opt/artifacts/vcpkg
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+          # La cache la gestiamo noi nel passo seguente, con una chiave che
+          # sappiamo leggere: due sistemi di cache sulla stessa cartella si
+          # pesterebbero i piedi. Qui si perdono 2-3 minuti di bootstrap, ma il
+          # comportamento e' prevedibile.
+          doNotCache: true
+
+      - name: Cache delle librerie native gia' compilate (ffmpeg, aom, opus...)
+        # Questa e' la cache che conta davvero: senza, ogni esecuzione
+        # ricostruisce ffmpeg da zero (circa 40 minuti). La chiave cambia solo
+        # se cambiano vcpkg.json o le "ricette" modificate in client/res/vcpkg.
+        id: cache-vcpkg
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
+        with:
+          path: /opt/artifacts/vcpkg/installed
+          key: vcpkg-${{ env.VCPKG_TRIPLET }}-${{ env.VCPKG_COMMIT_ID }}-${{ hashFiles('client/vcpkg.json', 'client/res/vcpkg/**') }}
+
+      - name: Compila le librerie native mancanti
+        # Si lancia dentro client/ perche' vcpkg lavora in "manifest mode":
+        # legge client/vcpkg.json, che indica da solo gli overlay
+        # (res/vcpkg per le ricette modificate, res/vcpkg-triplets).
+        # Se qualcosa va storto stampiamo i log, altrimenti l'errore e' muto.
+        run: |
+          if ! "$VCPKG_ROOT/vcpkg" install \
+              --triplet "$VCPKG_TRIPLET" \
+              --x-install-root="$VCPKG_ROOT/installed"; then
+            echo "::group::Log di vcpkg"
+            find "$VCPKG_ROOT/" -name "*.log" | while read -r f; do
+              echo "== $f =="
+              cat "$f"
+              echo
+            done
+            echo "::endgroup::"
+            exit 1
+          fi
+          # "|| true": head chiude il tubo appena ha le sue 30 righe, e in quel
+          # momento "ls" riceve un errore. Senza "|| true" il passo potrebbe
+          # fallire anche se e' andato tutto bene.
+          ls -l "$VCPKG_ROOT/installed/$VCPKG_TRIPLET/lib" | head -30 || true
+
+      - name: Libera lo spazio usato da vcpkg per compilare
+        # Le cartelle di lavoro di vcpkg pesano diversi GB e non servono piu':
+        # lo spazio serve alla compilazione di Rust. Si cancellano SOLO dopo che
+        # vcpkg e' andato a buon fine, perche' prima contengono i log d'errore.
+        run: |
+          rm -rf "$VCPKG_ROOT/buildtrees" "$VCPKG_ROOT/packages" "$VCPKG_ROOT/downloads"
+          df -h /
+
+      # --- Toolchain Rust + Flutter ----------------------------------------
+      - name: Installa Rust ${{ env.RUST_VERSION }}
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: x86_64-unknown-linux-gnu
+          components: "rustfmt"
+
+      - name: Cache di cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          prefix-key: ubuntu-22.04
+          workspaces: client
+
+      - name: Installa Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@2783a3f08e1baf891508463f8c6653c258246225 # v2.12.0
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Applica la patch obbligatoria a Flutter
+        # Questa patch corregge un difetto DENTRO Flutter 3.24.5, nel menu a
+        # tendina con ricerca (DropdownMenu): senza, l'elenco dei PC continua a
+        # mostrare il testo filtrato anche dopo che hai scelto una voce o
+        # svuotato la casella. Il programma compila comunque, quindi se
+        # dimenticassimo questo passo non ci sarebbe nessun errore rosso: se ne
+        # accorgerebbe solo chi usa l'app. Per questo il passo e' obbligatorio
+        # e fallisce se la patch non si applica.
+        # E' la stessa patch del CI di RustDesk
+        # (client/.github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff,
+        # applicata alle righe ~778-783 e ~1664-1675 di flutter-build.yml).
+        # Modifica i sorgenti dell'SDK, non il nostro codice:
+        # packages/flutter/lib/src/material/dropdown_menu.dart
+        # Il controllo "git apply -R --check" serve perche' l'SDK di Flutter
+        # viene messo in cache: se la patch c'e' gia' da un'esecuzione
+        # precedente, si salta invece di fallire.
+        run: |
+          DIFF="$PWD/.github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff"
+          if [ ! -f "$DIFF" ]; then
+            echo "::error::patch non trovata: $DIFF"
+            exit 1
+          fi
+          FLUTTER_SDK_DIR="$(dirname "$(dirname "$(which flutter)")")"
+          echo "SDK di Flutter: $FLUTTER_SDK_DIR"
+          cd "$FLUTTER_SDK_DIR"
+          if git apply -R --check "$DIFF" 2>/dev/null; then
+            echo "La patch risulta GIA' applicata (SDK ripreso dalla cache): salto."
+          elif git apply "$DIFF"; then
+            echo "Patch applicata."
+          else
+            echo "::error::La patch di Flutter non si applica. Controlla che FLUTTER_VERSION sia ancora 3.24.5."
+            exit 1
+          fi
+          flutter --version
+
+      - name: Recupera il bridge generato nel lavoro 2
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bridge-artifact
+          path: client     # rimette i file in client/src e client/flutter/lib
+
+      - name: Controlla che il bridge sia al suo posto
+        run: |
+          for f in src/bridge_generated.rs src/bridge_generated.io.rs flutter/lib/generated_bridge.dart flutter/lib/generated_bridge.freezed.dart; do
+            if [ ! -s "$f" ]; then
+              echo "::error::manca $f (artefatto del bridge non recuperato)"
+              exit 1
+            fi
+          done
+          ls -l src/bridge_generated.rs flutter/lib/generated_bridge.dart flutter/lib/generated_bridge.freezed.dart
+
+      - name: Costruisci solo la libreria dinamica
+        # Su Linux serve solo librustdesk.so: togliendo staticlib e rlib si
+        # risparmiano parecchi minuti e diversi GB. Identico al CI di RustDesk
+        # (passo "Disable rust bridge build"). La modifica vale solo qui.
+        run: |
+          sed -i 's/\["cdylib", "staticlib", "rlib"\]/["cdylib"]/g' Cargo.toml
+          grep -n "crate-type" Cargo.toml
+
+      - name: Rendi eseguibili gli script di installazione del pacchetto
+        # PERCHE' SERVE (e' un passo obbligatorio, non una precauzione).
+        # Dentro un pacchetto .deb ci sono 4 piccoli programmi che Ubuntu esegue
+        # durante l'installazione (preinst, postinst, prerm, postrm): sono loro
+        # che creano il collegamento /usr/bin/mtdesk e avviano il servizio.
+        # Perche' un programma si possa eseguire, il file deve avere il
+        # "permesso di esecuzione". Su Windows questo permesso non esiste:
+        # quando i file sono stati caricati su GitHub da un PC Windows, git li
+        # ha registrati come file di sola lettura/scrittura (644).
+        # Lo strumento che confeziona il pacchetto (dpkg-deb) controlla questa
+        # cosa e si RIFIUTA di lavorare, con il messaggio:
+        #   maintainer script 'postinst' has bad permissions 644
+        #   (must be >=0555 and <=0775)
+        # Quindi qui, sulla macchina Linux, rimettiamo il permesso prima di
+        # compilare. Non modifica il repository: vale solo per questa
+        # esecuzione. Il controllo finale serve a fermarsi subito, con un
+        # messaggio chiaro, se in futuro uno dei 4 file venisse rinominato.
+        run: |
+          chmod 755 res/DEBIAN/preinst res/DEBIAN/postinst res/DEBIAN/prerm res/DEBIAN/postrm
+          for f in preinst postinst prerm postrm; do
+            if [ ! -x "res/DEBIAN/$f" ]; then
+              echo "::error::res/DEBIAN/$f non e' eseguibile: dpkg-deb si fermerebbe."
+              exit 1
+            fi
+          done
+          ls -l res/DEBIAN/
+
+      - name: Controlla che gli script del pacchetto non abbiano fine-riga Windows
+        # ALTRO PASSO OBBLIGATORIO, e il piu' insidioso: non rompe la
+        # compilazione, rompe l'installazione sul PC del cliente.
+        # Windows termina ogni riga di testo con due caratteri invisibili (CR+LF),
+        # Linux con uno solo (LF). La prima riga di questi script dice a Ubuntu
+        # quale interprete usare: "#!/bin/bash". Se ci finisce in coda il
+        # carattere invisibile di Windows, Ubuntu cerca un programma chiamato
+        # "/bin/bash<invisibile>", non lo trova, e l'installazione fallisce con
+        # "bad interpreter". Il pacchetto si compilerebbe benissimo e non si
+        # installerebbe su nessun computer.
+        # Il file client/.gitattributes dovrebbe gia' impedirlo; questo e' il
+        # controllo che verifica che l'abbia davvero fatto.
+        run: |
+          errori=0
+          da_controllare="res/DEBIAN/preinst res/DEBIAN/postinst res/DEBIAN/prerm res/DEBIAN/postrm res/rustdesk.desktop res/rustdesk-link.desktop res/rustdesk.service"
+          for f in $da_controllare; do
+            # "tr -d" toglie i caratteri invisibili di Windows e "cmp" confronta il
+            # risultato con il file vero: se sono identici, quei caratteri non c'erano.
+            if tr -d "\015" < "$f" | cmp -s - "$f"; then
+              echo "OK - $f"
+            else
+              echo "::error::$f ha fine-riga Windows (CRLF): il pacchetto non si installerebbe."
+              errori=1
+            fi
+          done
+          if [ "$errori" != "0" ]; then
+            echo "Rimedio: aggiungi/correggi client/.gitattributes e ricommitta i file."
+            exit 1
+          fi
+          echo "Fine-riga corretti (LF) in tutti i file del pacchetto."
+
+      # --- Compilazione vera ------------------------------------------------
+      - name: Compila MTDesk e crea il pacchetto .deb
+        # build.py fa tre cose in fila:
+        #   1. cargo build --locked --release --lib
+        #      --features hwcodec,flutter,unix-file-copy-paste
+        #   2. flutter build linux --release
+        #   3. dpkg-deb: impacchetta tutto e produce client/rustdesk-<versione>.deb
+        # Le tre funzionalita' sono esattamente quelle del CI di RustDesk
+        # (riga 1624 di flutter-build.yml).
+        # CARGO_INCREMENTAL=0: la compilazione incrementale occupa spazio e su
+        # una macchina usa-e-getta non serve a niente.
+        env:
+          CARGO_INCREMENTAL: 0
+        run: |
+          python3 ./build.py --flutter --hwcodec --unix-file-copy-paste
+
+      - name: Sistema il pacchetto e dagli il nome definitivo
+        # Qui si fanno tre cose.
+        #
+        # 1) SI TROVA IL PACCHETTO. build.py lo chiama rustdesk-<versione>.deb,
+        #    perche' il nome interno del progetto non e' stato cambiato (e' solo
+        #    tecnico). Lo cerchiamo con un glob, cosi' il passo continua a
+        #    funzionare anche se in futuro il nome interno cambia col rebrand Linux.
+        #
+        # 2) SI METTONO I FILE A NOME DI root. Questo e' importante e non e'
+        #    un dettaglio estetico. Un pacchetto .deb si porta dietro anche
+        #    l'elenco di CHI possiede ogni file. Qui su GitHub la compilazione
+        #    gira con un utente normale (si chiama "runner", numero 1001), non
+        #    con root: senza questa correzione il pacchetto direbbe "questi file
+        #    appartengono all'utente numero 1001", e su un PC Ubuntu il numero
+        #    1001 e' il secondo utente creato sul computer. Quell'utente
+        #    potrebbe sostituire il programma di MTDesk, che il sistema avvia
+        #    con i privilegi di amministratore: cioe' diventare amministratore
+        #    senza password. Il CI di RustDesk non ha questo problema per caso,
+        #    perche' compila dentro un contenitore Docker dove si e' root.
+        #    dpkg-deb --root-owner-group riscrive tutto a root:root.
+        #
+        # 3) SI CALCOLA L'IMPRONTA SHA256, cosi' chi scarica puo' verificare
+        #    che il file non sia arrivato danneggiato o manomesso.
+        run: |
+          shopt -s nullglob
+          trovati=( *.deb )
+          if [ ${#trovati[@]} -eq 0 ]; then
+            echo "::error::Nessun .deb prodotto: build.py e' arrivato in fondo ma non ha impacchettato."
+            ls -la
+            exit 1
+          fi
+          if [ ${#trovati[@]} -gt 1 ]; then
+            echo "::error::Trovati piu' .deb e non so quale pubblicare: ${trovati[*]}"
+            exit 1
+          fi
+          echo "Pacchetto grezzo prodotto da build.py: ${trovati[0]}"
+
+          # Rifacciamo il pacchetto con i file a nome di root.
+          rm -rf /tmp/deb-riconfezionato
+          dpkg-deb --raw-extract "${trovati[0]}" /tmp/deb-riconfezionato
+          rm -f "${trovati[0]}"
+          dpkg-deb --root-owner-group --build /tmp/deb-riconfezionato "$NOME_DEB"
+
+          # Controllo: se restasse anche un solo file non di root, ci fermiamo.
+          non_root="$(dpkg-deb --contents "$NOME_DEB" | awk '$2 != "root/root"' | head -5 || true)"
+          if [ -n "$non_root" ]; then
+            echo "::error::Nel pacchetto ci sono ancora file non di root:"
+            echo "$non_root"
+            exit 1
+          fi
+          echo "Verificato: tutti i file del pacchetto appartengono a root."
+
+          echo "Pacchetto pronto:"
+          ls -lh "$NOME_DEB"
+          echo "::group::Metadati e contenuto del pacchetto"
+          dpkg-deb --info "$NOME_DEB"
+          dpkg-deb --contents "$NOME_DEB" | head -40 || true
+          echo "::endgroup::"
+          sha256sum "$NOME_DEB" | tee "$NOME_DEB.sha256"
+
+      # --- Consegna ---------------------------------------------------------
+      - name: Allega il pacchetto all'esecuzione (scaricabile anche senza Release)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mtdesk-ubuntu-amd64
+          path: |
+            client/${{ env.NOME_DEB }}
+            client/${{ env.NOME_DEB }}.sha256
+          if-no-files-found: error
+
+      - name: Decidi il nome della Release
+        id: nome
+        # Se il workflow e' partito da un tag, si usa quel tag.
+        # Se e' partito dal bottone manuale, si usa quello che hai scritto tu.
+        # Il testo che scrivi tu nella casella arriva qui dentro una variabile
+        # d'ambiente (TAG_SCELTO) e non viene incollato dentro il comando: cosi'
+        # non puo' essere scambiato per un pezzo di script.
+        env:
+          EVENTO: ${{ github.event_name }}
+          TAG_SCELTO: ${{ inputs.tag }}
+        run: |
+          if [ "$EVENTO" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            if [ -z "$TAG_SCELTO" ]; then
+              echo "::error::Non hai indicato nessun tag."
+              exit 1
+            fi
+            echo "tag=${TAG_SCELTO}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Crea o aggiorna la Release e allega il pacchetto
+        # Questa azione NON cancella gli allegati gia' presenti nella Release:
+        # puoi caricare a mano MTDesk-windows-x86_64.exe e MTDesk-qs.exe nella
+        # stessa Release e restano dove sono. Questo workflow sostituisce solo
+        # il .deb e il suo file .sha256.
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        with:
+          tag_name: ${{ steps.nome.outputs.tag }}
+          name: MTDesk ${{ steps.nome.outputs.tag }}
+          # prerelease = bozza di prova. Se spunti la casella nel bottone
+          # manuale, i link /releases/latest/download/... NON puntano qui.
+          prerelease: ${{ inputs.prerelease == true }}
+          make_latest: ${{ inputs.prerelease != true }}
+          files: |
+            client/${{ env.NOME_DEB }}
+            client/${{ env.NOME_DEB }}.sha256
+          body: |
+            ## MTDesk ${{ steps.nome.outputs.tag }}
+
+            Assistenza remota di Marketing Tools. Si collega da solo al centralino
+            `mtdesk.marketingtools.digital`: non c'e' niente da configurare.
+
+            ### Download
+
+            | Sistema | File | Come arriva qui |
+            |---|---|---|
+            | Windows 10/11 (64 bit) | `MTDesk-windows-x86_64.exe` | caricato a mano |
+            | Windows, avvio rapido senza installare | `MTDesk-qs.exe` | caricato a mano |
+            | Ubuntu 22.04 / 24.04 e Debian 12 (64 bit) | `mtdesk-ubuntu-amd64.deb` | automatico |
+
+            I due file per Windows si compilano sul PC e si allegano a mano a questa
+            pagina: se non li vedi ancora nell'elenco degli allegati qui sotto, vuol
+            dire che non sono stati caricati, non che il link e' rotto.
+
+            ### Installazione su Ubuntu
+
+            ```bash
+            sudo apt install ./mtdesk-ubuntu-amd64.deb
+            ```
+
+            ### Note
+
+            - Il pacchetto Ubuntu di questa pagina e' compilato automaticamente da
+              GitHub Actions su Ubuntu 22.04: funziona da Ubuntu 22.04 in su.
+            - I file non sono firmati digitalmente: Windows mostrera' un avviso
+              "editore sconosciuto" la prima volta. E' normale.
+            - MTDesk e' un'opera derivata di
+              [RustDesk](https://github.com/rustdesk/rustdesk) 1.4.9, distribuita
+              sotto licenza AGPL-3.0. L'elenco delle modifiche e' in
+              `client/REBRAND-CHANGES.md`. Non e' affiliato al progetto RustDesk.
+
+# =============================================================================
+#  PERCHE' QUI NON C'E' UN LAVORO PER WINDOWS
+# =============================================================================
+#  La scelta e' deliberata: un lavoro Windows scritto oggi fallirebbe, e un
+#  workflow sempre rosso e' peggio di un workflow che fa una cosa sola e la fa
+#  bene. Per compilare Windows, il CI di RustDesk deve:
+#
+#  1. SOSTITUIRE IL MOTORE DI FLUTTER con una versione modificata da RustDesk
+#     (flutter-build.yml, righe 208-217: scarica windows-x64-release.zip dal
+#     repository rustdesk/engine e ne sovrascrive i file dentro la cartella
+#     della cache di Flutter). Serve per come MTDesk disegna il video sullo
+#     schermo: senza, l'app parte ma la finestra del desktop remoto resta nera.
+#     Il problema e' COME lo fa: copia i file in un percorso scritto a mano,
+#     C:/hostedtoolcache/windows/flutter/stable-3.24.5-x64/... . Quel percorso
+#     dipende dalla versione dell'azione che installa Flutter e dall'immagine
+#     del runner: se cambia di una virgola, la copia va a vuoto SENZA dare
+#     errore, e il problema si scopre solo provando l'app sul PC di un cliente.
+#     Su Linux non serve: lo dice lo stesso commento nel file upstream ("x64 only").
+#
+#  2. Compilare prima un progetto C++ a parte (RustDeskTempTopMostWindow, un
+#     terzo workflow), scaricarne il risultato, e solo dopo compilare l'app.
+#
+#  3. Costruire l'installer con WiX v4 + NuGet + MSBuild, e il pacchetto
+#     "portable" con un impacchettatore Python. Sul PC di casa questi passaggi
+#     hanno richiesto 6 correzioni, tutte documentate in fondo a
+#     client/BUILD-WINDOWS.md (fra cui: attivare la Modalita' sviluppatore di
+#     Windows per i collegamenti simbolici, e correggere a mano un file di
+#     Flutter perche' cercava Visual Studio 2019).
+#
+#  4. Girare su windows-2022: RustDesk non usa windows-latest. Le immagini
+#     Windows piu' recenti hanno altre versioni di Visual Studio, cioe' di
+#     nuovo il punto 3.
+#
+#  COSA FACCIAMO INVECE
+#  Windows si compila in locale, dove funziona gia':
+#      powershell -ExecutionPolicy Bypass -File client\scripts\build-mtdesk.ps1
+#  e i file prodotti si caricano a mano nella Release creata da questo
+#  workflow, con questi nomi esatti:
+#      MTDesk-windows-x86_64.exe
+#      MTDesk-qs.exe
+#  I link /releases/latest/download/<nome> continuano a funzionare, perche'
+#  questo workflow non cancella gli allegati che trova gia' nella Release.
+#
+#  Il bisogno vero che questo workflow risolve e' Ubuntu: non c'e' una macchina
+#  Linux in casa, quindi senza GitHub Actions il .deb non esisterebbe.
+# =============================================================================

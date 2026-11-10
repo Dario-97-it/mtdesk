@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=MTDesk
+NoDisplay=true
+MimeType=x-scheme-handler/mtdesk;
+TryExec=mtdesk
+Exec=mtdesk %u
+Icon=mtdesk
+Terminal=false
+Type=Application
+StartupNotify=false
+StartupWMClass=mtdesk

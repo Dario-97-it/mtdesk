@@ -1,0 +1,105 @@
+# =====================================================================
+#  MTDesk — .gitignore
+#  Creato PRIMA del primo commit. Tutto cio' che e' elencato qui non
+#  finira' mai su GitHub.
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# 1) SEGRETI — non devono uscire, per nessun motivo
+# ---------------------------------------------------------------------
+# Dati del server: contengono la CHIAVE PRIVATA del centralino
+deploy/data/
+server/data/
+
+# NOTA (nov 2026): la cartella server/ NON e' piu' esclusa.
+# Prima era un clone upstream non modificato tenuto solo come riferimento e il
+# deploy usava l'immagine Docker di terzi. Adesso e' codice NOSTRO: ci abbiamo
+# vendorizzato hbb_common (il submodule upstream era vuoto, quindi il server
+# non era nemmeno compilabile) e costruiamo la nostra immagine Docker da questi
+# sorgenti. Va quindi pubblicata nel repository.
+# Resta escluso soltanto server/data/ (chiavi e database), vedi sopra.
+
+# Appunti con la chiave del centralino: per prudenza NON si pubblica.
+# Se hai verificato che dentro ci sia solo la chiave PUBBLICA (quella che
+# sta gia' anche in client/libs/hbb_common/src/config.rs e nel README),
+# puoi togliere questa riga senza rischi.
+deploy/CHIAVE-SERVER.txt
+
+# Chiavi, ovunque si trovino
+id_ed25519
+id_ed25519.pub
+*.pem
+*.key
+# Cartella dove GUIDA-MESSA-IN-OPERA.md fa salvare la chiave SSH del VPS:
+# esclusa tutta, non solo i file *.key (cosi' non scappa nemmeno un .ppk o un .pub)
+chiavi-vps/
+*.pfx
+*.p12
+*.gpg
+secring.*
+
+# Configurazioni di produzione (il modello .env.example invece SI')
+.env
+*.env
+!.env.example
+!deploy/.env.example
+
+# Database del centralino: ID e indirizzi IP dei PC dei clienti (GDPR)
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+blacklist.txt
+
+# Appunti di lavoro privati
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+.claude/
+
+# ---------------------------------------------------------------------
+# 2) ROBA COMPILATA — gigabyte che si rigenerano da soli
+# ---------------------------------------------------------------------
+target/
+**/target/
+client/flutter/build/
+**/.dart_tool/
+client/flutter/windows/flutter/ephemeral/
+client/libs/portable/data.bin
+vcpkg_installed/
+__pycache__/
+logs/
+*.log
+
+# Eseguibili e pacchetti: si pubblicano nelle GitHub Releases, non nel repo
+*.exe
+*.msi
+*.dll
+*.so
+*.dylib
+*.pdb
+*.lib
+*.deb
+*.rpm
+*.AppImage
+*.dmg
+*.zip
+*.7z
+
+# ---------------------------------------------------------------------
+# 3) FILE TEMPORANEI E DI BACKUP
+# ---------------------------------------------------------------------
+*.orig
+*.rej
+*.bak
+*.tmp
+*~
+
+# ---------------------------------------------------------------------
+# 4) EDITOR E SISTEMA OPERATIVO
+# ---------------------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

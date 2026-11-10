@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+case $1 in
+    purge)
+		# la cartella di configurazione e .config/mtdesk (ricavata da APP_NAME)
+		rm -rf /root/.config/mtdesk || true
+        ;;
+esac
+
+exit 0

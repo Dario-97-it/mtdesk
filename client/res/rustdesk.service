@@ -1,0 +1,26 @@
+# Servizio di sistema di MTDesk.
+# Viene installato come /usr/lib/systemd/system/mtdesk.service:
+# il nome DEVE restare 'mtdesk', perche' il programma lancia
+# "systemctl enable/start mtdesk" ricavando il nome da se stesso.
+[Unit]
+Description=MTDesk - Assistenza remota
+Requires=network.target
+After=systemd-user-sessions.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/mtdesk --service
+# chiude sia --tray sia --server con un solo comando
+ExecStop=pkill -f "mtdesk --"
+# le due righe seguenti non funzionano: serve la riga sopra
+#ExecStop=pkill -f "mtdesk --tray"
+#ExecStop=pkill -f "mtdesk --server"
+PIDFile=/run/mtdesk.pid
+KillMode=mixed
+TimeoutStopSec=30
+User=root
+LimitNOFILE=100000
+Environment="PULSE_LATENCY_MSEC=60" "PIPEWIRE_LATENCY=1024/48000"
+
+[Install]
+WantedBy=multi-user.target

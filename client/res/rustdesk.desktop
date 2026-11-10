@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=MTDesk
+GenericName=Assistenza remota
+Comment=MTDesk - assistenza remota Marketing Tools
+Exec=mtdesk %u
+Icon=mtdesk
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Network;RemoteAccess;GTK;
+Keywords=mtdesk;assistenza;teleassistenza;desktop remoto;remote-control;remote-desktop;p2p;vnc;rdp;
+Actions=new-window;
+StartupWMClass=mtdesk
+
+X-Desktop-File-Install-Version=0.23
+
+[Desktop Action new-window]
+Name=Apri una nuova finestra
+Exec=mtdesk %u

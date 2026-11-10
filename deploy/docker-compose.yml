@@ -1,0 +1,68 @@
+# ==========================================================================
+#  MTDesk Server  —  relay/rendezvous self-hosted (based on rustdesk-server)
+#  Marketing Tools  ·  marketingtools.digital
+#
+#  Va installato su una macchina con IP PUBBLICO (VPS o server con
+#  port-forwarding). Imposta MTDESK_HOST nel file .env con il tuo
+#  dominio o IP pubblico, poi:  docker compose up -d
+# ==========================================================================
+
+name: mtdesk-server
+
+networks:
+  mtdesk-net:
+    external: false
+
+# Rotazione dei log: senza questo, su un VPS piccolo i log di Docker
+# crescono all'infinito fino a riempire il disco.
+x-logging: &mtdesk-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  hbbs:                       # ID / Rendezvous server (trova i peer per ID)
+    container_name: mtdesk-hbbs
+    image: rustdesk/rustdesk-server:latest
+    # -k _  => impone la chiave del server (id_ed25519 in ./data).
+    # Per hbbs e' gia' il default, lo rendiamo esplicito per chiarezza.
+    command: hbbs -r ${MTDESK_HOST}:21117 -k _
+    ports:
+      - "21115:21115"         # NAT type test (TCP)
+      - "21116:21116"         # rendezvous / hole-punch (TCP)
+      - "21116:21116/udp"     # rendezvous / heartbeat (UDP) — OBBLIGATORIA
+    volumes:
+      - ./data:/root          # qui vengono generate le CHIAVI (id_ed25519*)
+    networks:
+      - mtdesk-net
+    depends_on:
+      - hbbr
+    restart: unless-stopped
+    logging: *mtdesk-logging
+
+  hbbr:                       # Relay server (traffico quando il P2P non passa)
+    container_name: mtdesk-hbbr
+    image: rustdesk/rustdesk-server:latest
+    # -k _  => QUI E' ESSENZIALE: senza, hbbr accetta chiunque e il relay
+    # diventa un tunnel gratuito per estranei (consumo di banda).
+    command: hbbr -k _
+    ports:
+      - "21117:21117"         # relay (TCP)
+    environment:
+      # Tetti di banda: il nostro uso reale sta su 1-3 Mb/s per sessione.
+      # Questi valori sono 5-10 volte il necessario e impediscono che un
+      # abuso saturi la banda inclusa del VPS.
+      - SINGLE_BANDWIDTH=16   # Mb/s massimi per singola sessione
+      - TOTAL_BANDWIDTH=32    # Mb/s massimi su tutte le sessioni insieme
+      - LIMIT_SPEED=8         # Mb/s per gli IP declassati / in blacklist.txt
+    volumes:
+      - ./data:/root
+    networks:
+      - mtdesk-net
+    restart: unless-stopped
+    logging: *mtdesk-logging
+
+# NOTA: le porte 21118 e 21119 (websocket per il web client) sono state
+# RIMOSSE di proposito: il web client non e' usato e non lo sara'.
+# Meno porte esposte = meno superficie di attacco.

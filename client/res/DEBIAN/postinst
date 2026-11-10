@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+if [ "$1" = configure ]; then
+
+	INITSYS=$(ls -al /proc/1/exe | awk -F' ' '{print $NF}' | awk -F'/' '{print $NF}')
+	# /usr/share/rustdesk resta il nome tecnico della cartella (upstream);
+	# l'eseguibile e il collegamento in /usr/bin si chiamano mtdesk.
+	ln -f -s /usr/share/rustdesk/mtdesk /usr/bin/mtdesk
+
+	if [ "systemd" == "$INITSYS" ]; then
+
+		if [ -e /etc/systemd/system/mtdesk.service ]; then
+			# Ripulitura di una vecchia installazione: i tre file possono non esserci
+			# tutti. Senza '|| true' un file mancante farebbe fallire l'installazione.
+			rm /etc/systemd/system/mtdesk.service /usr/lib/systemd/system/mtdesk.service /usr/lib/systemd/user/mtdesk.service >/dev/null 2>&1 || true
+		fi
+		mkdir -p /usr/lib/systemd/system/
+		cp /usr/share/rustdesk/files/systemd/mtdesk.service /usr/lib/systemd/system/mtdesk.service
+		# try fix error in Ubuntu 18.04
+		# Failed to reload mtdesk.service: Unit mtdesk.service is not loaded properly: Exec format error.
+		# /usr/lib/systemd/system/mtdesk.service:10: Executable path is not absolute: pkill -f "mtdesk --"
+		if [ -e /usr/bin/pkill ]; then
+			sed -i "s|pkill|/usr/bin/pkill|g" /usr/lib/systemd/system/mtdesk.service
+		fi
+		systemctl daemon-reload
+		systemctl enable mtdesk
+		systemctl start mtdesk
+	fi
+fi
+
+# Aggiorna le cache del desktop: senza questo passaggio l'icona di MTDesk
+# puo' non comparire nel menu e i link mtdesk:// non vengono associati
+# al programma. I comandi possono non essere installati: in quel caso si salta.
+if command -v update-desktop-database >/dev/null 2>&1; then
+	update-desktop-database /usr/share/applications >/dev/null 2>&1 || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+	gtk-update-icon-cache -f -t /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi

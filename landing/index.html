@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistenza remota — Marketing Tools</title>
+<meta name="description" content="Scarica MTDesk e fatti assistere a distanza da Marketing Tools. Nessuna installazione, la sessione dura solo il tempo della chiamata.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0A0A14">
+<!-- Open Graph: se carichi anche brand/mt-og-image.png sul sito, metti qui il suo URL -->
+<meta property="og:title" content="Assistenza remota — Marketing Tools">
+<meta property="og:description" content="Scarica MTDesk, leggi i due codici al telefono, e ti aiutiamo noi.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Assistenza remota MTDesk - pagina unica, nessuna dipendenza esterna
+   a parte il font Inter. Funziona anche aperta con doppio clic.
+   Design system Marketing Tools: vedi brand/BRAND-MTDESK.md
+   ========================================================================== */
+
+:root{
+  /* Sfondi */
+  --bg-deep:#0A0A14;
+  --bg-surface:#0F0F1E;
+  --bg-elevated:#161628;
+  --bg-card:#1A1A2E;
+  /* Testo */
+  --text:rgba(255,255,255,.95);
+  --muted:#A0A0B0;
+  /* Accenti brand */
+  --accent:#00BCD4;
+  --green:#2ECC71;
+  --blue:#2196F3;
+  --purple:#9C27B0;
+  --orange:#FF9800;
+  /* Gradiente firma */
+  --gradient-brand:linear-gradient(135deg,#2ECC71 0%,#00BCD4 25%,#2196F3 50%,#9C27B0 75%,#FF9800 100%);
+  --gradient-brand-cool:linear-gradient(135deg,#2ECC71 0%,#00BCD4 50%,#2196F3 100%);
+  /* Vetro (glassmorphism) */
+  --glass-bg:rgba(26,26,46,.55);
+  --glass-border:rgba(255,255,255,.10);
+  --glass-shadow:0 8px 32px rgba(0,0,0,.35), 0 0 30px rgba(0,188,212,.10);
+  /* Misure */
+  --gutter:16px;
+  --radius:16px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{
+  color-scheme:dark;
+  -webkit-text-size-adjust:100%;
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  /* Nessuno scroll orizzontale, su nessun telefono */
+  overflow-x:hidden;
+  background-color:var(--bg-deep);
+  /* Aloni radiali morbidi agli angoli, 5-8% come da design system */
+  background-image:
+    radial-gradient(60vw 60vw at 8% -6%, rgba(46,204,113,.07), transparent 70%),
+    radial-gradient(70vw 70vw at 100% 4%, rgba(0,188,212,.08), transparent 70%),
+    radial-gradient(70vw 70vw at 0% 100%, rgba(156,39,176,.07), transparent 70%),
+    radial-gradient(60vw 60vw at 100% 100%, rgba(33,150,243,.06), transparent 70%);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:"Inter",system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:17px;
+  line-height:1.65;
+  letter-spacing:-.005em;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{
+  width:100%;
+  max-width:760px;
+  margin:0 auto;
+  padding:0 var(--gutter) 64px;
+}
+
+/* ----------------------------------------------------------- intestazione - */
+header{
+  padding:28px 0 4px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.logo-mark{
+  width:38px;height:38px;flex:0 0 38px;
+  border-radius:11px;
+  background:var(--gradient-brand);
+  display:grid;place-items:center;
+  font-weight:800;font-size:15px;letter-spacing:-.02em;
+  color:#0A0A14;
+  box-shadow:0 0 24px rgba(0,188,212,.28);
+}
+.logo-text{font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+.logo-text span{color:var(--muted);font-weight:500}
+
+/* ------------------------------------------------------------------ hero -- */
+.hero{padding:26px 0 8px}
+h1{
+  margin:0 0 14px;
+  font-size:clamp(1.85rem,7.5vw,3rem);
+  line-height:1.12;
+  font-weight:800;
+  letter-spacing:-.03em;
+  /* Titolo col gradiente firma. Il color resta come ripiego. */
+  color:var(--accent);
+  background:var(--gradient-brand);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.lead{
+  margin:0;
+  font-size:clamp(1.02rem,3.6vw,1.2rem);
+  color:var(--text);
+}
+.lead strong{color:#fff;font-weight:600}
+.lead-sub{margin:10px 0 0;color:var(--muted);font-size:.97rem}
+
+/* ------------------------------------------------------------------ card -- */
+.card{
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-radius:var(--radius);
+  box-shadow:var(--glass-shadow);
+  padding:22px;
+  margin:22px 0;
+}
+@media (min-width:600px){ .card{padding:28px} }
+
+.card-title{
+  margin:0 0 6px;
+  font-size:1.18rem;
+  font-weight:700;
+  letter-spacing:-.02em;
+  display:flex;align-items:center;gap:10px;
+}
+.card-sub{margin:0 0 18px;color:var(--muted);font-size:.95rem}
+
+/* Pallino colorato che apre i titoli di sezione */
+.dot{
+  width:9px;height:9px;flex:0 0 9px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 12px currentColor;color:var(--accent);
+}
+.dot.warn{background:var(--orange);color:var(--orange)}
+.dot.ok{background:var(--green);color:var(--green)}
+.dot.linux{background:var(--purple);color:var(--purple)}
+
+/* -------------------------------------------------------------- download -- */
+.dl-grid{display:grid;gap:12px}
+@media (min-width:560px){ .dl-grid{grid-template-columns:1fr 1fr} }
+
+.btn{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding:16px 18px;
+  border-radius:14px;
+  text-decoration:none;
+  border:1px solid var(--glass-border);
+  background:var(--bg-elevated);
+  color:var(--text);
+  transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  min-height:64px;
+  justify-content:center;
+}
+.btn:hover,.btn:focus-visible{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,.22);
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+.btn-main{
+  /* Il pulsante principale porta il gradiente firma */
+  background:var(--gradient-brand-cool);
+  border-color:transparent;
+  color:#08121A;
+}
+.btn-main:hover,.btn-main:focus-visible{
+  box-shadow:0 10px 34px rgba(0,188,212,.35);
+}
+.btn-label{font-weight:700;font-size:1.06rem;letter-spacing:-.01em}
+.btn-note{font-size:.82rem;opacity:.75;font-weight:500;word-break:break-word}
+.btn-main .btn-note{opacity:.8}
+
+a:focus-visible,.btn:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+}
+
+.dl-foot{margin:16px 0 0;font-size:.88rem;color:var(--muted)}
+
+/* ------------------------------------------------------------------ passi - */
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+ol.steps li{
+  counter-increment:s;
+  position:relative;
+  padding:0 0 18px 50px;
+  border-left:1px solid rgba(255,255,255,.10);
+  margin-left:16px;
+}
+ol.steps li:last-child{border-left-color:transparent;padding-bottom:0}
+ol.steps li::before{
+  content:counter(s);
+  position:absolute;left:-17px;top:-2px;
+  width:34px;height:34px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  font-weight:700;font-size:.95rem;
+  color:#0A0A14;
+  background:var(--gradient-brand-cool);
+  box-shadow:0 0 18px rgba(0,188,212,.25);
+}
+ol.steps b{display:block;font-weight:600;font-size:1.04rem;margin-bottom:2px}
+ol.steps p{margin:0;color:var(--muted);font-size:.95rem}
+
+/* ----------------------------------------------------------------- avvisi - */
+.alert{
+  border-radius:var(--radius);
+  padding:20px;
+  margin:22px 0;
+  border:1px solid rgba(255,152,0,.35);
+  background:
+    linear-gradient(180deg, rgba(255,152,0,.10), rgba(255,152,0,.04)),
+    var(--glass-bg);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 8px 32px rgba(0,0,0,.35);
+}
+@media (min-width:600px){ .alert{padding:26px} }
+.alert h2{
+  margin:0 0 8px;font-size:1.14rem;font-weight:700;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:10px;color:#FFD9A0;
+}
+.alert p{margin:0 0 12px}
+.alert p:last-child{margin-bottom:0}
+
+.screen{
+  /* Finto riquadro di Windows: serve al cliente per riconoscere cosa vede */
+  margin:14px 0;
+  padding:14px 16px;
+  border-radius:12px;
+  background:rgba(10,10,20,.6);
+  border:1px solid rgba(255,255,255,.10);
+  font-size:.92rem;
+}
+.screen .t{font-weight:600;color:#fff;margin-bottom:2px}
+.screen .d{color:var(--muted)}
+
+.do{margin:0;padding:0;list-style:none}
+.do li{
+  padding:9px 0 9px 30px;
+  position:relative;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+.do li:first-child{border-top:none}
+.do li::before{
+  content:"";
+  position:absolute;left:4px;top:18px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--orange);
+  box-shadow:0 0 10px rgba(255,152,0,.6);
+}
+.do b{color:#fff}
+kbd{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:6px;
+  background:var(--bg-elevated);
+  border:1px solid rgba(255,255,255,.16);
+  border-bottom-width:2px;
+  font:inherit;font-size:.9em;font-weight:600;
+  color:#fff;
+  white-space:nowrap;
+}
+
+/* ----------------------------------------------------------------- codice - */
+pre{
+  margin:12px 0;
+  padding:14px 16px;
+  border-radius:12px;
+  background:rgba(10,10,20,.72);
+  border:1px solid rgba(255,255,255,.12);
+  /* Se il comando è lungo scorre SOLO questo blocco, non la pagina */
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  font-size:.9rem;
+  line-height:1.6;
+  color:#CFF6FF;
+}
+pre code{padding:0;border:0;background:none;font-size:inherit;color:inherit;white-space:pre}
+
+/* Comandi brevi scritti dentro una frase */
+code{
+  padding:1px 6px;
+  border-radius:6px;
+  background:rgba(10,10,20,.6);
+  border:1px solid rgba(255,255,255,.12);
+  font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  font-size:.88em;
+  color:#CFF6FF;
+  word-break:break-word;
+}
+
+/* Collegamenti scritti dentro una frase (non i pulsanti di download) */
+.wrap p a:not(.btn){
+  color:#7FE3F0;
+  text-decoration:none;
+  border-bottom:1px solid rgba(127,227,240,.35);
+}
+.wrap p a:not(.btn):hover{color:#BFF3F9}
+.hint{margin:6px 0 0;font-size:.88rem;color:var(--muted)}
+
+/* ---------------------------------------------------------------- privacy - */
+.privacy{
+  border-color:rgba(46,204,113,.30);
+  background:
+    linear-gradient(180deg, rgba(46,204,113,.09), rgba(0,188,212,.04)),
+    var(--glass-bg);
+}
+.privacy h2{color:#BFF3D4}
+.privacy .do li::before{background:var(--green);box-shadow:0 0 10px rgba(46,204,113,.6)}
+
+/* ----------------------------------------------------------------- footer - */
+.help{text-align:center;padding:8px 0 0}
+.help p{margin:0 0 6px}
+.help .ph{
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:8px;
+  border:1px dashed rgba(0,188,212,.55);
+  background:rgba(0,188,212,.08);
+  color:#9BEBF7;
+  font-weight:600;
+  font-size:.95rem;
+}
+
+footer{
+  margin-top:34px;
+  padding-top:22px;
+  border-top:1px solid rgba(255,255,255,.08);
+  color:var(--muted);
+  font-size:.85rem;
+}
+footer p{margin:0 0 10px}
+footer a{color:#7FE3F0;text-decoration:none;border-bottom:1px solid rgba(127,227,240,.35);word-break:break-word}
+footer a:hover{color:#BFF3F9}
+
+/* Rispetto di chi ha chiesto meno animazioni nel sistema */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-mark" aria-hidden="true">MT</div>
+    <div class="logo-text">MTDesk <span>· Marketing Tools</span></div>
+  </header>
+
+  <!-- ===================================================== INTRO ========== -->
+  <section class="hero">
+    <h1>Assistenza a distanza</h1>
+    <p class="lead">
+      Con <strong>MTDesk</strong> il nostro tecnico vede il tuo schermo e sistema il problema
+      da remoto, mentre tu resti al telefono con lui.
+    </p>
+    <p class="lead-sub">
+      Scarica il programma qui sotto, aprilo, e leggi al tecnico i due codici che compaiono.
+      Non serve registrarsi e non serve creare nessun account.
+    </p>
+  </section>
+
+  <!-- ================================================== DOWNLOAD ========== -->
+  <section class="card" aria-labelledby="t-download">
+    <h2 class="card-title" id="t-download"><span class="dot" aria-hidden="true"></span>1. Scarica il programma</h2>
+    <p class="card-sub">Scegli il pulsante del tuo computer. Se non sai quale sia, quasi sicuramente è Windows.</p>
+
+    <div class="dl-grid">
+      <a class="btn btn-main"
+         href="https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-windows-x86_64.exe">
+        <span class="btn-label">Scarica per Windows</span>
+        <span class="btn-note">MTDesk-windows-x86_64.exe</span>
+      </a>
+      <a class="btn"
+         href="https://github.com/Dario-97-it/mtdesk/releases/latest/download/mtdesk-ubuntu-amd64.deb">
+        <span class="btn-label">Scarica per Ubuntu / Linux</span>
+        <span class="btn-note">mtdesk-ubuntu-amd64.deb</span>
+      </a>
+    </div>
+
+    <p class="dl-foot">
+      Il file arriva nella cartella <b>Download</b> (su Ubuntu si chiama <b>Scaricati</b>).
+      Su Windows basta fare doppio clic sul file scaricato: si apre e basta, non si installa.
+    </p>
+  </section>
+
+  <!-- =============================================== COME FUNZIONA ======== -->
+  <section class="card" aria-labelledby="t-steps">
+    <h2 class="card-title" id="t-steps"><span class="dot" aria-hidden="true"></span>2. Come funziona, in 3 passi</h2>
+    <p class="card-sub">Dall'inizio alla fine ci vuole meno di un minuto.</p>
+
+    <ol class="steps">
+      <li>
+        <b>Scarica e apri</b>
+        <p>Doppio clic sul file che hai appena scaricato. Si apre una finestra con il nome MTDesk.
+           Su Windows non c&rsquo;è niente da installare e non serve la password del computer.
+           Se hai Ubuntu, il passaggio è un po&rsquo; diverso: segui il riquadro
+           <a href="#t-ubuntu">&ldquo;Se hai Ubuntu o Linux&rdquo;</a> qui sotto. In nessuno dei due
+           casi devi creare un account.</p>
+      </li>
+      <li>
+        <b>Leggi al telefono i due codici</b>
+        <p>Nella finestra, sotto la voce <b>&ldquo;Questo desktop&rdquo;</b>, vedrai un <b>ID</b> di 9 cifre e una
+           <b>Password</b> breve. Leggili al tecnico che hai al telefono: sono gli unici dati che ti chiediamo.</p>
+      </li>
+      <li>
+        <b>Resta al telefono e guarda</b>
+        <p>Dopo qualche secondo vedrai il puntatore del mouse muoversi da solo: è il tecnico che sta lavorando.
+           Tu puoi continuare a parlare e seguire tutto sullo schermo. Quando avete finito, chiudi la finestra di MTDesk.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ================================================ SMARTSCREEN ======== -->
+  <section class="alert" aria-labelledby="t-smartscreen">
+    <h2 id="t-smartscreen"><span class="dot warn" aria-hidden="true"></span>Windows dirà che non conosce il programma: è normale</h2>
+    <p>La prima volta che apri il file, Windows può mostrare una finestra blu come questa:</p>
+
+    <div class="screen">
+      <div class="t">Windows ha protetto il PC</div>
+      <div class="d">Microsoft Defender SmartScreen ha impedito l'avvio di un'app non riconosciuta.<br>
+      Editore: <b>Sconosciuto</b></div>
+    </div>
+
+    <p>
+      Non è un virus e non c'è niente di rotto. Quel messaggio compare perché MTDesk è un programma
+      nostro, nuovo e poco diffuso, e non abbiamo comprato il certificato a pagamento che serve a far
+      sparire l'avviso. <b>Il file lo puoi aprire tranquillamente.</b>
+    </p>
+
+    <ul class="do">
+      <li>Clicca su <kbd>Ulteriori informazioni</kbd>: è una scritta piccola dentro la finestra blu.</li>
+      <li>Poi clicca sul pulsante <kbd>Esegui comunque</kbd> che compare in basso.</li>
+      <li>Se durante lo scaricamento il browser dice che il file <b>&ldquo;potrebbe essere dannoso&rdquo;</b>,
+          scegli <kbd>Mantieni</kbd> oppure <kbd>Conserva comunque</kbd>.</li>
+      <li>Se compare la finestra <b>&ldquo;Consentire a questa app di apportare modifiche?&rdquo;</b>,
+          rispondi <kbd>Sì</kbd>.</li>
+    </ul>
+
+    <p class="hint">
+      Se ti blocchi in uno di questi passaggi non insistere da solo: dillo al tecnico che hai al telefono,
+      ti guida lui schermata per schermata.
+    </p>
+  </section>
+
+  <!-- ===================================================== UBUNTU ======== -->
+  <section class="card" aria-labelledby="t-ubuntu">
+    <h2 class="card-title" id="t-ubuntu"><span class="dot linux" aria-hidden="true"></span>Se hai Ubuntu o Linux</h2>
+    <p class="card-sub">Qui serve un comando. Copialo, incollalo nel Terminale e premi Invio.</p>
+
+    <p>Apri il <b>Terminale</b> (tasti <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>) e incolla queste due righe:</p>
+<pre><code>cd ~/Scaricati || cd ~/Downloads
+sudo apt install ./mtdesk-ubuntu-amd64.deb</code></pre>
+    <p class="hint">
+      Ti verrà chiesta la password del tuo utente Linux: scrivila (mentre la digiti non si vede nulla, è normale)
+      e premi Invio. Quando torna la riga di comando, cerca <b>MTDesk</b> tra le applicazioni e aprilo.
+    </p>
+    <p class="hint">
+      <b>Se sul computer hai già RustDesk, avvisa il tecnico prima di dare questo comando:</b>
+      MTDesk nasce da RustDesk e i due programmi non possono stare insieme, quindi
+      l&rsquo;installazione toglierebbe RustDesk.
+    </p>
+
+    <p style="margin-top:18px">
+      <b>Una cosa da sapere sulle versioni recenti di Ubuntu.</b>
+      Alla prima apertura il sistema può mostrare una richiesta di <b>condivisione dello schermo</b>
+      (una finestra tipo &ldquo;Vuoi condividere il contenuto dello schermo?&rdquo;). Scegli
+      <b>lo schermo intero</b> e conferma con <kbd>Condividi</kbd>: se la rifiuti o la chiudi,
+      il tecnico vedrà solo una schermata nera.
+    </p>
+  </section>
+
+  <!-- ==================================================== PRIVACY ======== -->
+  <section class="alert privacy" aria-labelledby="t-privacy">
+    <h2 id="t-privacy"><span class="dot ok" aria-hidden="true"></span>Il controllo resta tuo</h2>
+
+    <ul class="do">
+      <li><b>La sessione è cifrata.</b> Quello che passa tra il tuo computer e quello del tecnico viaggia
+          protetto da una chiave creata sul momento dai due computer. Il nostro server serve solo a farli
+          incontrare e non è in grado di leggere il contenuto della sessione.</li>
+      <li><b>Nessuno entra senza la tua password.</b> Il tecnico può collegarsi solo se gli detti la
+          password che compare sul tuo schermo. Quella password viene generata di nuovo ogni volta che
+          apri il programma: non resta valida per sempre.</li>
+      <li><b>Su Windows funziona solo con il programma aperto.</b> Finché la finestra di MTDesk è aperta il
+          collegamento è possibile; quando la chiudi, la connessione cade e nessuno può più entrare.
+          Per ricominciare servono un nuovo ID e una nuova password.</li>
+      <li><b>Su Windows non installa nulla in modo permanente.</b> Il file che scarichi è una versione
+          portatile: non aggiunge programmi all'avvio del computer e non lascia servizi in esecuzione.
+          Chiuso MTDesk il computer torna come prima, e se vuoi puoi anche cancellare il file scaricato.</li>
+      <li><b>Su Ubuntu, invece, il programma resta installato.</b> Il pacchetto <code>.deb</code> mette
+          MTDesk fra le applicazioni e lo fa partire insieme al computer, così la volta dopo sei pronto
+          subito. Anche in quel caso nessuno si collega senza la password che leggi sullo schermo. Se non
+          ti serve più, lo togli con <code>sudo apt remove mtdesk</code>.</li>
+      <li><b>Vedi tutto quello che succede.</b> Non ci sono sessioni invisibili: il puntatore che si muove,
+          le finestre che si aprono, tutto avviene davanti ai tuoi occhi, e puoi fermare l'intervento in
+          qualsiasi momento chiudendo il programma.</li>
+    </ul>
+
+    <p class="hint" style="margin-top:16px">
+      <b>Trasparenza (GDPR).</b> Quando il programma è in funzione, il server di Marketing Tools registra
+      l'identificativo del dispositivo (l'ID a 9 cifre) e l'indirizzo IP della connessione, per il tempo
+      necessario a mettere in comunicazione i due computer. Serve tecnicamente a far trovare le due macchine
+      su internet; il contenuto della sessione non viene raccolto.
+    </p>
+  </section>
+
+  <!-- ====================================================== AIUTO ======== -->
+  <section class="card help" aria-labelledby="t-help">
+    <h2 class="card-title" id="t-help" style="justify-content:center"><span class="dot" aria-hidden="true"></span>Serve una mano?</h2>
+    <p style="color:var(--muted);font-size:.95rem">
+      Se qualcosa non torna, scrivici o chiamaci: non provare a insistere da solo.
+    </p>
+    <p><span class="ph">[INSERIRE EMAIL ASSISTENZA]</span></p>
+    <p><span class="ph">[INSERIRE TELEFONO ASSISTENZA]</span></p>
+  </section>
+
+  <!-- ===================================================== FOOTER ======== -->
+  <footer>
+    <p>
+      MTDesk è software libero basato su RustDesk, licenza AGPL-3.0.
+      Codice sorgente: <a href="https://github.com/Dario-97-it/mtdesk">https://github.com/Dario-97-it/mtdesk</a>
+    </p>
+    <p>
+      Marketing Tools · <a href="https://marketingtools.digital">marketingtools.digital</a>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
