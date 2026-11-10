@@ -105,6 +105,11 @@ RUN apt-get update \
 COPY --from=compilazione /sorgenti/target/release/hbbs /usr/local/bin/hbbs
 COPY --from=compilazione /sorgenti/target/release/hbbr /usr/local/bin/hbbr
 COPY --from=compilazione /sorgenti/target/release/mtdesk-utils /usr/local/bin/mtdesk-utils
+#  Lo script di avvio: sistema i permessi di /data e cede i privilegi.
+#  Il chmod e' qui e non nel repository perche' un file passato da Windows
+#  perde il permesso di esecuzione.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 #  /data e' dove vengono generate e conservate le CHIAVI del centralino
 #  (id_ed25519 e id_ed25519.pub) e il database con gli ID dei clienti.
@@ -112,10 +117,13 @@ COPY --from=compilazione /sorgenti/target/release/mtdesk-utils /usr/local/bin/mt
 WORKDIR /data
 VOLUME /data
 
-#  Niente root: se un giorno uno dei due programmi venisse compromesso,
-#  l'attaccante si troverebbe con i permessi di un utente che possiede
-#  soltanto /data.
-USER mtdesk
+#  NIENTE "USER mtdesk" QUI, ed e' voluto.
+#  I due programmi girano comunque senza privilegi, ma a cedere i privilegi e'
+#  lo script di avvio, DOPO aver assegnato /data all'utente mtdesk. Con
+#  "USER mtdesk" scritto qui il contenitore partiva gia' senza privilegi e non
+#  poteva sistemare la cartella dati, che Docker crea a nome di root: su
+#  un'installazione nuova hbbs si fermava con "unable to open database file"
+#  e ripartiva all'infinito (provato il 10/11/2026).
 
 #  Porte, per documentazione (quelle pubblicate le decide il compose):
 #    21115 TCP  prova del tipo di NAT
@@ -126,5 +134,5 @@ EXPOSE 21115 21116 21116/udp 21117
 
 #  Il programma da avviare lo scegliera' il compose con "command: hbbs ..."
 #  oppure "command: hbbr ...". Senza argomenti parte il rendezvous.
-ENTRYPOINT []
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["hbbs"]

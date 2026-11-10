@@ -1,0 +1,15 @@
+# MTDesk - fine riga dei file che vengono ESEGUITI O LETTI DA LINUX.
+#
+# Windows termina le righe con due caratteri (CR+LF), Linux con uno (LF).
+# Uno script di shell con i fine riga di Windows non parte: Linux cerca un
+# interprete chiamato "/bin/sh<carattere invisibile>" e risponde
+# "bad interpreter" oppure "exec format error". Succederebbe costruendo
+# l'immagine Docker da una copia del repository scaricata su Windows.
+# Queste righe impongono LF qualunque sia l'impostazione di git sul PC.
+*.sh            text eol=lf
+Dockerfile*     text eol=lf
+*.dockerignore  text eol=lf
+*.sql           text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+deploy/.env.example text eol=lf
