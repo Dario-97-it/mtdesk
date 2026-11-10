@@ -196,9 +196,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
+          // MTDesk: barretta col gradiente del brand invece del ciano piatto.
           Container(
-            width: 2,
-            decoration: const BoxDecoration(color: MyTheme.accent),
+            width: 3,
+            decoration: const BoxDecoration(
+              gradient: MyTheme.brandGradientVertical,
+              borderRadius: BorderRadius.all(Radius.circular(2)),
+            ),
           ).marginOnly(top: 5),
           Expanded(
             child: Padding(
@@ -303,9 +307,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         textBaseline: TextBaseline.alphabetic,
         children: [
           Container(
-            width: 2,
+            // MTDesk: come sopra, gradiente del brand.
+            width: 3,
             height: 52,
-            decoration: BoxDecoration(color: MyTheme.accent),
+            decoration: const BoxDecoration(
+              gradient: MyTheme.brandGradientVertical,
+              borderRadius: BorderRadius.all(Radius.circular(2)),
+            ),
           ),
           Expanded(
             child: Padding(

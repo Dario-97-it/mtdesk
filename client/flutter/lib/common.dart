@@ -248,6 +248,47 @@ class ColorThemeExtension extends ThemeExtension<ColorThemeExtension> {
 class MyTheme {
   MyTheme._();
 
+  // ===================================================================
+  //  PALETTE MARKETING TOOLS  (fonte: brand/BRAND-MTDESK.md)
+  // -------------------------------------------------------------------
+  //  Il tema scuro di RustDesk usava un grigio-bruno (#24252B, #18191E)
+  //  su cui il rebrand aveva cambiato SOLO lo sfondo della finestra in
+  //  #0A0A14. Risultato: fondo blu-nero con sopra card, campi e dialoghi
+  //  grigio-caldi, cioe' due famiglie di colore che non stanno insieme.
+  //  Questi token sono la scala completa del brand: vanno usati tutti.
+  // ===================================================================
+  static const Color bgDeep = Color(0xFF0A0A14);      // sfondo finestra
+  static const Color bgSurface = Color(0xFF0F0F1E);   // pannelli
+  static const Color bgElevated = Color(0xFF161628);  // barre, campi di testo
+  static const Color bgCard = Color(0xFF1A1A2E);      // card / superfici glass
+  static const Color bgHover = Color(0xFF1F1F38);     // passaggio del mouse
+  static const Color brandBorder = Color(0x1AFFFFFF); // bordo glass, bianco 10%
+  static const Color textMuted = Color(0xFFA0A0B0);   // testo secondario
+
+  /// Gradiente firma del brand: l'elemento che rende il programma
+  /// riconoscibile come Marketing Tools e non come un fork qualunque.
+  static const List<Color> brandGradientColors = [
+    Color(0xFF2ECC71), // verde
+    Color(0xFF00BCD4), // ciano (accento primario)
+    Color(0xFF2196F3), // blu
+    Color(0xFF9C27B0), // viola
+    Color(0xFFFF9800), // arancio
+  ];
+
+  /// Verticale: per le barrette di accento accanto a ID e password.
+  static const LinearGradient brandGradientVertical = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: brandGradientColors,
+  );
+
+  /// Diagonale a 135 gradi, come sul sito.
+  static const LinearGradient brandGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: brandGradientColors,
+  );
+
   static const Color grayBg = Color(0xFFEFEFF2);
   static const Color accent = Color(0xFF00BCD4);
   static const Color accent50 = Color(0x7700BCD4);
@@ -471,9 +512,9 @@ class MyTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: false,
     brightness: Brightness.dark,
-    hoverColor: Color.fromARGB(255, 45, 46, 53),
-    scaffoldBackgroundColor: Color(0xFF0A0A14),
-    dialogBackgroundColor: Color(0xFF0A0A14),
+    hoverColor: bgHover,
+    scaffoldBackgroundColor: bgDeep,
+    dialogBackgroundColor: bgSurface,
     appBarTheme: AppBarTheme(
       shadowColor: Colors.transparent,
     ),
@@ -483,14 +524,14 @@ class MyTheme {
         borderRadius: BorderRadius.circular(18.0),
         side: BorderSide(
           width: 1,
-          color: Color(0xFF24252B),
+          color: brandBorder,
         ),
       ),
     ),
     scrollbarTheme: scrollbarThemeDark,
     inputDecorationTheme: (isDesktop || isWebDesktop)
         ? InputDecorationTheme(
-            fillColor: Color(0xFF24252B),
+            fillColor: bgElevated,
             filled: true,
             isDense: true,
             border: OutlineInputBorder(
@@ -509,7 +550,7 @@ class MyTheme {
         color: accent80,
       ),
     ),
-    cardColor: Color(0xFF24252B),
+    cardColor: bgCard,
     visualDensity: VisualDensity.adaptivePlatformDensity,
     tabBarTheme: const TabBarTheme(
       labelColor: Colors.white70,
@@ -543,7 +584,7 @@ class MyTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        backgroundColor: Color(0xFF24252B),
+        backgroundColor: bgElevated,
         side: BorderSide(color: Colors.white12, width: 0.5),
         disabledForegroundColor: Colors.white70,
         foregroundColor: Colors.white70,
@@ -562,7 +603,7 @@ class MyTheme {
     colorScheme: ColorScheme.dark(
       primary: Colors.blue,
       secondary: accent,
-      background: Color(0xFF24252B),
+      background: bgSurface,
     ),
     popupMenuTheme: PopupMenuThemeData(
         shape: RoundedRectangleBorder(
@@ -3999,7 +4040,11 @@ bool get isCustomClient {
 }
 
 get defaultOptionLang => isCustomClient ? 'default' : '';
-get defaultOptionTheme => isCustomClient ? 'system' : '';
+// MTDesk: tema SCURO per default.
+// Prima era 'system': su un Windows impostato in tema chiaro, MTDesk si apriva
+// in bianco (#EFEFF2), cioe' l'opposto dell'identita' Marketing Tools, che e'
+// dark glassmorphism. L'utente puo' comunque cambiarlo dalle impostazioni.
+get defaultOptionTheme => isCustomClient ? 'dark' : '';
 get defaultOptionYes => isCustomClient ? 'Y' : '';
 get defaultOptionNo => isCustomClient ? 'N' : '';
 get defaultOptionWhitelist => isCustomClient ? ',' : '';
