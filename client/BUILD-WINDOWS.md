@@ -98,7 +98,7 @@ copia dei driver/dll. L'app si chiamerà **MTDesk** (APP_NAME hardcoded).
 - **Icona/nome:** già applicati nel sorgente (APP_NAME=MTDesk, res/icon.*, Runner.rc). Non serve altro.
 - **Server:** già hardcoded in `libs/hbb_common/src/config.rs` (host + chiave). Per cambiarlo, edita L117-118 e ricompila.
 - **Firma:** l'exe non è firmato → Windows SmartScreen mostrerà un avviso "editore sconosciuto". Per rimuoverlo serve un certificato Code Signing (~200-400€/anno) — opzionale, non necessario per uso interno/clienti.
-- **Exe file:** internamente resta `rustdesk.exe` (BINARY_NAME non rinominato per sicurezza build); l'utente vede "MTDesk" ovunque. Puoi rinominare il file finale a mano se vuoi.
+- **Exe file:** il programma si chiama `mtdesk.exe` (BINARY_NAME in `flutter/windows/CMakeLists.txt`). Fino a novembre 2026 era `rustdesk.exe`: compariva cosi' in Gestione attivita' e sfuggiva ai `taskkill` che cercano `<nome app>.exe`. I due file da distribuire li produce `build.py` con i nomi giusti, e NON vanno rinominati a mano: e' il nome a decidere se il programma installa o fa assistenza rapida.
 
 ---
 

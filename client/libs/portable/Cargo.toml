@@ -28,7 +28,7 @@ native-windows-gui = {version = "1.0", default-features = false, features = ["an
 [package.metadata.winres]
 LegalCopyright = "Copyright © 2026 Marketing Tools - basato su RustDesk (AGPL-3.0)"
 ProductName = "MTDesk"
-OriginalFilename = "rustdesk.exe"
+OriginalFilename = "mtdesk.exe"
 FileDescription = "MTDesk Remote Desktop"
 #ProductVersion = ""
 

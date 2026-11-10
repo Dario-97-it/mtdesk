@@ -984,7 +984,7 @@ jobs:
       - name: Compila (cargo + flutter + pacchetto autoestraente)
         # build.py fa tre cose in fila:
         #   1. cargo build --locked --release --lib  ->  librustdesk.dll
-        #   2. flutter build windows --release       ->  rustdesk.exe + dll
+        #   2. flutter build windows --release       ->  mtdesk.exe + dll
         #   3. libs/portable/generate.py             ->  i due .exe finali
         # Il terzo passo fino a novembre 2026 era rotto: invocava `pip3` e
         # `python3`, che su Windows non esistono, e build.py si fermava SUBITO

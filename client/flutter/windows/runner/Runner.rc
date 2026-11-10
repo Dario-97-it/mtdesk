@@ -92,9 +92,9 @@ BEGIN
             VALUE "CompanyName", "Marketing Tools" "\0"
             VALUE "FileDescription", "MTDesk Remote Desktop" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "rustdesk" "\0"
+            VALUE "InternalName", "mtdesk" "\0"
             VALUE "LegalCopyright", "Copyright © 2026 Marketing Tools - basato su RustDesk (AGPL-3.0)" "\0"
-            VALUE "OriginalFilename", "rustdesk.exe" "\0"
+            VALUE "OriginalFilename", "mtdesk.exe" "\0"
             VALUE "ProductName", "MTDesk" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END

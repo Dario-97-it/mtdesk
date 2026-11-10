@@ -4,7 +4,13 @@ project(rustdesk LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "rustdesk")
+# MTDesk: il programma su Windows si chiama mtdesk.exe (era rustdesk.exe).
+# E' il nome che compare in Gestione attivita'. Non e' solo estetica: il codice
+# chiude le istanze precedenti cercandole come "<nome app>.exe" (taskkill in
+# src/platform/windows.rs), quindi con il vecchio nome le copie portatili
+# sfuggivano a quella ricerca. L'installazione gestisce entrambi i casi
+# (rename_exe_cmd salta la rinomina se il file si chiama gia' come l'app).
+set(BINARY_NAME "mtdesk")
 
 # Explicitly opt into modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

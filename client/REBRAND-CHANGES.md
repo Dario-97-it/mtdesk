@@ -139,8 +139,9 @@ client è stato compilato, non solo dall'URL.
 
 ## NON modificato di proposito (rischio/tecnico)
 - Nomi crate/pacchetto: `rustdesk`, `librustdesk`, `flutter_hbb`, bundle id `com.carriez.*`,
-  la cartella `/usr/share/rustdesk` e il nome dell'eseguibile su **Windows**
-  (`flutter/windows/CMakeLists.txt` riga 7, ancora `rustdesk`).
+  la cartella `/usr/share/rustdesk`.
+  (Il nome dell'eseguibile su Windows NON e' piu' in questo elenco: da novembre 2026 e'
+  `mtdesk.exe`, vedi `flutter/windows/CMakeLists.txt`.)
   Sono nomi interni che l'utente non vede: rinominarli tutti = alto rischio, non necessario.
 - Note di licenza AGPL nei sorgenti: mantenute (obbligo di legge).
 
