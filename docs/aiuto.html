@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aiuto · MTDesk</title>
-<meta name="description" content="Risoluzione dei problemi di MTDesk: Wayland e X11 su Ubuntu, schermata di accesso, permessi, centralino.">
+<meta name="description" content="Risoluzione dei problemi di MTDesk: Wayland e X11 su Ubuntu, schermata di accesso, tastiera, permessi, centralino, avvisi di Windows, aggiornamento, disinstallazione.">
 <link rel="stylesheet" href="_stile.css">
 </head>
 <body>
@@ -17,30 +17,54 @@
 <div class="riga-grad"></div>
 <h1>Aiuto e risoluzione dei problemi</h1>
 <p class="sommario">Questa pagina si apre dai cartellini di avviso dentro MTDesk. Ogni sezione
-risponde a un avviso preciso. Se sei un cliente e ti è stato chiesto di aprire questa pagina,
-vai direttamente alla sezione che ti è stata indicata.</p>
+risponde a un avviso o a un problema preciso. Se sei un cliente e ti è stato chiesto di aprire
+questa pagina, vai direttamente alla sezione che ti è stata indicata.</p>
 
 <ul class="indice">
   <li><a href="#x11-richiesto">Serve X11, non Wayland<small>Ubuntu 22.04 e successivi — "lo schermo non si vede"</small></a></li>
   <li><a href="#schermata-di-accesso">Schermata di accesso<small>Non si vede il login prima che l'utente entri</small></a></li>
+  <li><a href="#tastiera-wayland">Tastiera su Wayland<small>«Vuoi consentire l'input da tastiera?»</small></a></li>
   <li><a href="#permessi">Permessi su Linux<small>Avviso su permessi o SELinux</small></a></li>
-  <li><a href="#centralino">Il centralino<small>Cos'è il server a cui si collega MTDesk</small></a></li>
+  <li><a href="#caratteri-sbagliati">Caratteri sbagliati<small>Scrivo e sul computer remoto esce altro</small></a></li>
+  <li><a href="#centralino">Il centralino<small>Cos'è il server a cui si collega MTDesk, e la spia che non diventa verde</small></a></li>
+  <li><a href="#windows-avvisi">Avvisi di Windows<small>Autore sconosciuto, permesso di amministratore, firewall, antivirus</small></a></li>
+  <li><a href="#aggiornamento">Avviso di aggiornamento<small>«È disponibile una nuova versione»: cosa fare</small></a></li>
+  <li><a href="#disinstallare">Togliere MTDesk<small>Windows e Ubuntu, comprese le cartelle che restano</small></a></li>
   <li><a href="#permessi-macos">macOS<small>Non è supportato</small></a></li>
+  <li><a href="#segnalare">Il problema non è qui<small>A chi rivolgersi, e cosa non mandare in pubblico</small></a></li>
 </ul>
 
 <h2 id="x11-richiesto">Serve X11, non Wayland</h2>
 <div class="card">
 <p><strong>Il sintomo.</strong> Su Ubuntu MTDesk si collega, mostra l'ID, ma chi dà assistenza
-vede lo schermo nero, oppure vede l'immagine ma mouse e tastiera non hanno effetto.</p>
+vede lo schermo nero, oppure vede l'immagine ma mouse e tastiera non hanno effetto. Altra forma
+dello stesso problema: al posto dello schermo, al tecnico compare una finestra «Errore accesso»
+con un messaggio in inglese che parla di cattura dello schermo («screen capture»).</p>
 
 <p><strong>Il perché.</strong> Ubuntu 22.04 e tutte le versioni successive usano per default un
 sistema grafico chiamato <strong>Wayland</strong>. Wayland, per come è progettato, impedisce a un
 programma di leggere lo schermo degli altri programmi e di muovere il puntatore al posto
-dell'utente. È una scelta di sicurezza, non un difetto. Il sistema grafico precedente,
-<strong>X11</strong> (chiamato anche Xorg), lo permette, e MTDesk ha bisogno di quello.</p>
+dell'utente. È una scelta di sicurezza, non un difetto. Su Wayland MTDesk può lavorare solo
+chiedendo il permesso a chi è seduto davanti al computer, e lo fa ancora in via sperimentale: è
+quello che dice l'avviso dentro il programma. Il sistema grafico precedente,
+<strong>X11</strong> (chiamato anche Xorg), non ha questo limite, ed è quello con cui MTDesk
+funziona meglio.</p>
+
+<h3>Prima di tutto: che versione di Ubuntu hai</h3>
+<p>La strada da seguire dipende dalla versione. Per saperla, apri il terminale e dai:</p>
+<pre><code>grep PRETTY_NAME /etc/os-release</code></pre>
+<table>
+  <tr><th>Versioni precedenti alla 25.10 (per esempio 22.04 e 24.04)</th>
+      <td>X11 c'è ancora: per un'assistenza stabile usa una delle due soluzioni qui sotto. Finché
+      non lo fai, vale quello che è scritto per le versioni successive.</td></tr>
+  <tr><th>Ubuntu 25.10, 26.04 e successive</th>
+      <td>X11 non c'è più e le due soluzioni non si possono applicare. Vai a
+      <a href="#solo-wayland">Ubuntu 25.10 e successive: X11 non c'è più</a>.</td></tr>
+</table>
 
 <h3>Soluzione rapida: una sola sessione</h3>
-<p>Va bene quando serve assistenza adesso e una volta sola.</p>
+<p>Va bene quando serve assistenza adesso e una volta sola. Solo sulle versioni precedenti alla
+25.10.</p>
 <ol>
   <li>Esci dalla sessione: in alto a destra, menu di sistema → <em>Spegni / Esci</em> → <em>Esci</em>.</li>
   <li>Nella schermata di accesso clicca sul tuo nome utente.</li>
@@ -51,7 +75,7 @@ dell'utente. È una scelta di sicurezza, non un difetto. Il sistema grafico prec
 
 <h3>Soluzione definitiva: sempre X11</h3>
 <p>Va bene sul PC di un cliente che riceve assistenza con una certa regolarità. Serve la password
-di amministrazione del PC.</p>
+di amministrazione del PC. Anche questa vale solo sulle versioni precedenti alla 25.10.</p>
 <pre><code>sudo nano /etc/gdm3/custom.conf</code></pre>
 <p>Dentro il file cerca la riga:</p>
 <pre><code>#WaylandEnable=false</code></pre>
@@ -67,6 +91,34 @@ effetto: verifica di aver salvato il file e di aver riavviato.</p>
 <div class="nota attenzione">Su alcune installazioni il file si chiama
 <code>/etc/gdm/custom.conf</code> (senza il <code>3</code>). Se <code>nano</code> ti apre un file
 vuoto, prova quell'altro percorso.</div>
+
+<h3 id="solo-wayland">Ubuntu 25.10 e successive: X11 non c'è più</h3>
+<p>Da Ubuntu 25.10 la voce <em>Ubuntu su Xorg</em> è stata tolta dal sistema: nella schermata di
+accesso la rotellina non la propone più. Vale anche per Ubuntu 26.04. Le due soluzioni qui sopra
+quindi <strong>non si possono applicare</strong>, e su queste versioni il file
+<code>/etc/gdm3/custom.conf</code> non va modificato: X11 non c'è, quindi la modifica non può
+avere l'effetto voluto.</p>
+<p>Su queste versioni MTDesk lavora in Wayland. In pratica:</p>
+<ol>
+  <li><strong>Deve esserci qualcuno davanti al computer.</strong> Quando il tecnico si collega,
+  Ubuntu mostra una richiesta di condivisione dello schermo. Va scelto lo schermo da mostrare
+  (se sono più d'uno, quello su cui serve assistenza) e la richiesta va confermata: il pulsante
+  di solito si chiama <em>Condividi</em>. Nel frattempo il tecnico, dalla sua parte, legge
+  <em>Seleziona lo schermo da condividere (opera sul lato dispositivo remoto)</em>: vuol dire che
+  il programma sta aspettando proprio questa conferma.</li>
+  <li><strong>Se la richiesta viene rifiutata o chiusa</strong>, il tecnico non vede lo schermo:
+  resta nero, oppure gli compare la finestra «Errore accesso». Rimedio: il tecnico chiude il
+  collegamento e si ricollega; alla nuova richiesta si conferma.</li>
+  <li><strong>Se l'immagine arriva ma mouse e tastiera non rispondono</strong>, i controlli da
+  fare sono in <a href="#permessi">Permessi su Linux</a>.</li>
+</ol>
+<div class="nota">Ubuntu può ricordare lo schermo scelto. Se è stato scelto quello sbagliato, la
+scelta si azzera da MTDesk: Impostazioni → Generale → riquadro <em>Wayland</em> →
+<em>Annulla selezione schermata Wayland</em>. Il riquadro compare solo quando una scelta è stata
+memorizzata.</div>
+<div class="nota attenzione">Il funzionamento su Wayland è la parte che MTDesk stesso definisce
+sperimentale. Prima di contare sull'assistenza a un cliente con Ubuntu recente, conviene fare
+insieme a lui un collegamento di prova.</div>
 </div>
 
 <h2 id="schermata-di-accesso">Schermata di accesso (prima che l'utente entri)</h2>
@@ -78,13 +130,57 @@ Wayland anche quando la sessione dell'utente è in X11. Quindi non è catturabil
 <p><strong>La soluzione</strong> è la stessa della sezione precedente, ma va fatta
 <strong>obbligatoriamente nella versione definitiva</strong>: la modifica a
 <code>/etc/gdm3/custom.conf</code> con <code>WaylandEnable=false</code>. La scelta "Ubuntu su
-Xorg" dalla rotellina riguarda solo la sessione dell'utente e non tocca la schermata di accesso.</p>
+Xorg" dalla rotellina riguarda solo la sessione dell'utente e non tocca la schermata di accesso.
+Come quella, si può fare solo sulle versioni di Ubuntu precedenti alla 25.10.</p>
 <p>Serve anche che MTDesk sia <strong>installato come servizio</strong> e non semplicemente
 avviato: solo così è attivo prima che qualcuno entri. Sul pacchetto <code>.deb</code> l'installazione
 del servizio è automatica.</p>
+<p><strong>Su Ubuntu 25.10, 26.04 e successive questa soluzione non esiste</strong>, perché X11
+non c'è più. Con il pacchetto che viene distribuito
+(<code>mtdesk-ubuntu-amd64.deb</code>) la schermata di accesso non si può né vedere né comandare
+da lontano: dopo un riavvio serve qualcuno sul posto che entri con la sua password e che poi
+confermi la richiesta di condivisione dello schermo.</p>
+<p>Nel codice di MTDesk esiste una variante del pacchetto pensata proprio per questo caso (si
+chiama <code>mtdesk-unattended-wayland</code>): cattura lo schermo direttamente, senza passare
+dalla richiesta di condivisione di Ubuntu. Oggi però <strong>non è stata né costruita né
+provata, e non viene distribuita</strong>: non è una soluzione su cui contare adesso.</p>
 <div class="nota stop"><strong>Da sapere prima di promettere questa funzione a un cliente.</strong>
 Senza questa modifica l'accesso non presidiato su Ubuntu funziona solo a sessione già aperta. È il
-punto in cui MTDesk su Linux differisce di più da come ci si aspetta che funzioni su Windows.</div>
+punto in cui MTDesk su Linux differisce di più da come ci si aspetta che funzioni su Windows.
+Sulle versioni dalla 25.10 in poi, dove la modifica non si può fare, sull'accesso non presidiato
+non si può contare: dopo un riavvio non c'è, e anche a sessione aperta va messo in conto che serva
+una persona davanti al computer per confermare la condivisione dello schermo.</div>
+</div>
+
+<h2 id="tastiera-wayland">Tastiera su Wayland: «Vuoi consentire l'input da tastiera?»</h2>
+<div class="card">
+<p><strong>Quando compare.</strong> Riguarda chi dà assistenza. Sei collegato a un computer Ubuntu
+che usa Wayland e, nella barra in alto della sessione, dal menu <em>Azioni controllo</em> scegli
+<em>Invia sequenze tasti appunti</em>: è il comando che scrive sul computer remoto il testo che hai
+copiato sul tuo, per esempio una password lunga. Prima di eseguirlo MTDesk chiede:</p>
+<div class="nota"><strong>Vuoi consentire l'input da tastiera?</strong><br>
+Ciò che digiti in questo computer remoto (comprese le password) potrebbe essere letto da altre app
+presenti nel computer remoto.</div>
+<p><strong>Il perché.</strong> Su Wayland MTDesk non riesce sempre a premere i tasti al posto
+dell'utente. Un testo fatto solo di lettere senza accento, cifre e simboli comuni lo batte
+davvero, tasto per tasto. Quando invece nel testo c'è anche una sola lettera accentata o un
+simbolo particolare, usa una scorciatoia: copia tutto il testo negli <strong>appunti del computer
+remoto</strong> e lo incolla con la combinazione <code>Maiusc+Ins</code>. Quel testo quindi passa
+dagli appunti di quel computer, dove un altro programma può leggerlo (per esempio uno che tiene
+la cronologia degli appunti), e <strong>ci resta anche dopo</strong>: MTDesk non rimette al suo
+posto quello che c'era prima.</p>
+<p><strong>Cosa fare.</strong></p>
+<ul>
+  <li>Se il testo non è riservato, conferma con <em>OK</em>: viene inviato.</li>
+  <li>Se è una password, valuta se scriverla a mano dalla tastiera invece di usare quel comando.
+  Se la invii lo stesso, subito dopo copia sul computer remoto un testo qualunque: prende il
+  posto della password negli appunti.</li>
+  <li>La casella <em>Non chiedere più per questo computer remoto</em> fa ricordare la risposta.
+  Per tornare indietro, nello stesso menu compare la voce <em>Ripristina scelta input da
+  tastiera</em>.</li>
+</ul>
+<p>Sui computer Ubuntu che lavorano in X11 questa domanda non compare: vedi
+<a href="#x11-richiesto">Serve X11, non Wayland</a>.</p>
 </div>
 
 <h2 id="permessi">Permessi su Linux</h2>
@@ -109,6 +205,47 @@ vedi su una di quelle distribuzioni, il modo corretto è creare una regola dedic
 SELinux. Su Ubuntu il sistema equivalente è AppArmor e non ostacola MTDesk.</p>
 </div>
 
+<h2 id="caratteri-sbagliati">Scrivo e compaiono caratteri sbagliati</h2>
+<div class="card">
+<p><strong>Il sintomo.</strong> Riguarda chi dà assistenza. Sei collegato, premi un tasto e sul
+computer remoto ne esce un altro: di solito succede con i simboli e con le lettere accentate,
+mentre le lettere normali escono giuste.</p>
+<p><strong>Il perché.</strong> Capita quando i due computer hanno la tastiera impostata su lingue
+diverse, per esempio la tua italiana e quella del cliente inglese. Per impostazione predefinita
+MTDesk lavora in <em>Modalità mappa</em>: non trasmette il carattere, ma la
+<strong>posizione</strong> del tasto che hai premuto. Quale carattere esce lo decide la lingua di
+tastiera impostata sul computer remoto. Finché le due lingue coincidono non te ne accorgi; quando
+sono diverse, i tasti che da una lingua all'altra cambiano significato escono sbagliati.</p>
+<p><strong>La soluzione.</strong></p>
+<ol>
+  <li>Nella barra in alto della sessione apri il menu con l'icona di tastiera e mouse: passandoci
+  sopra con il puntatore compare la scritta <em>Impostazioni tastiera</em>.</li>
+  <li>In cima al menu ci sono le modalità: <em>Modalità legacy</em>, <em>Modalità mappa</em>,
+  <em>Modalità traduzione beta</em>.</li>
+  <li>Scegli <strong>Modalità traduzione beta</strong> al posto di <em>Modalità mappa</em>. In
+  questa modalità MTDesk trasmette il carattere che hai scritto tu, qualunque sia la lingua di
+  tastiera del computer remoto.</li>
+</ol>
+<p>La scelta viene ricordata per quel computer. La parola «beta» significa che la modalità è
+ancora in prova: se con quella qualche combinazione di tasti si comporta in modo strano, torna
+alla <em>Modalità mappa</em>.</p>
+
+<h3>Quando la scelta non c'è</h3>
+<p>In due casi il menu mostra una sola modalità e non c'è niente da scegliere:</p>
+<ul>
+  <li><strong>il computer remoto è un Ubuntu in Wayland</strong>: viene offerta solo la
+  <em>Modalità mappa</em>;</li>
+  <li><strong>il tuo MTDesk sta usando la <em>Sorgente ingresso (2)</em></strong>: con quella
+  sorgente resta disponibile una modalità sola. Se nel menu compaiono le due voci <em>Sorgente
+  ingresso (1)</em> e <em>Sorgente ingresso (2)</em>, seleziona la (1) e le altre modalità
+  tornano. Se il tuo computer è un Ubuntu in Wayland le due voci non compaiono: lì la sorgente è
+  sempre la (2) e non si può cambiare.</li>
+</ul>
+<p>In questi casi il rimedio sta dall'altra parte: sul computer del cliente si imposta, anche solo
+per la durata dell'assistenza, la stessa lingua di tastiera che usi tu. Si fa dalle impostazioni
+del sistema operativo, alla voce della tastiera.</p>
+</div>
+
 <h2 id="centralino">Il centralino (il server a cui si collega MTDesk)</h2>
 <div class="card">
 <p>MTDesk non usa server di altre aziende. Si collega a un <strong>centralino gestito da Marketing
@@ -119,8 +256,184 @@ da ponte per il traffico.</p>
 il cliente scarica, apre e vede solo ID e password. Non c'è niente da configurare.</p>
 <p>Schermo, tastiera e file viaggiano <strong>cifrati da un capo all'altro</strong>: il centralino
 vede passare i dati ma non è in grado di leggerli.</p>
-<p>Se il centralino è momentaneamente irraggiungibile, MTDesk resta aperto ma non riesce a trovare
-l'altro computer: in quel caso l'ID non diventa verde. Non è un problema del tuo PC.</p>
+
+<!-- NOTA TEMPORANEA: togliere questo riquadro quando il centralino entra in servizio. -->
+<div class="nota stop"><strong>Stato attuale.</strong> Il centralino predefinito
+(<code>mtdesk.marketingtools.digital</code>) <strong>non è ancora in funzione</strong>. Finché non
+viene attivato, con il programma così come si scarica la spia descritta qui sotto non diventa
+verde e i collegamenti non si stabiliscono: non dipende dal tuo PC. Questo riquadro verrà tolto
+quando il centralino entrerà in servizio.</div>
+
+<h3>Come si vede se il centralino risponde</h3>
+<p>In basso nella finestra di MTDesk c'è una piccola spia colorata con una scritta accanto:</p>
+<table>
+  <tr><th>Verde, «Pronto»</th><td>MTDesk ha raggiunto il centralino: l'assistenza può partire.</td></tr>
+  <tr><th>Arancione, «Connessione alla rete MTDesk...»</th><td>Sta ancora provando a
+  raggiungerlo. All'avvio è normale per qualche secondo.</td></tr>
+  <tr><th>Rossa, «Non pronto. Verifica la connessione»</th><td>Non riesce a raggiungerlo.</td></tr>
+  <tr><th>Arancione, «Il servizio non è in esecuzione»</th><td>Non c'entra il centralino: su questo
+  computer il servizio di MTDesk è stato fermato. Clicca <em>Avvia servizio</em>, lì accanto.</td></tr>
+</table>
+
+<h3>Se la spia non diventa verde</h3>
+<ol>
+  <li>Controlla che internet funzioni: apri un sito qualunque nel browser.</li>
+  <li>Se internet funziona e la spia resta arancione o rossa, il problema è dalla parte del
+  centralino o della rete che sta in mezzo, non del tuo computer. Non reinstallare il programma e
+  non cambiare impostazioni: non servirebbe.</li>
+  <li>Avvisa il tecnico. Finché la spia non è verde l'assistenza con MTDesk non può cominciare:
+  sarà lui a dirti come procedere.</li>
+</ol>
+<p>Chi dà assistenza se ne accorge allo stesso modo sul proprio MTDesk: la spia non è verde e, se
+prova comunque a collegarsi, gli compare la finestra <em>Errore connessione</em>.
+L'indirizzo del centralino usato dal programma completo si trova in Impostazioni → Rete →
+<em>Server ID/Relay</em>: va toccato solo su indicazione di chi gestisce il servizio.</p>
+</div>
+
+<h2 id="windows-avvisi">Windows: gli avvisi al primo avvio</h2>
+<div class="card">
+<p>Riguarda i due file per Windows: <code>MTDesk-qs.exe</code> (assistenza rapida, non si
+installa) e <code>MTDesk-windows-x86_64-install.exe</code> (si installa e resta).</p>
+<p><strong>Il perché, valido per tutti gli avvisi qui sotto.</strong> MTDesk è gratuito e non ha
+una firma digitale, cioè il certificato a pagamento con cui un produttore si fa riconoscere da
+Windows. Senza quella firma Windows, il browser e l'antivirus non sanno chi ha fatto il programma
+e, per prudenza, avvisano. Sono avvisi attesi, non il segno di un guasto.</p>
+
+<h3>Il browser dice che il file potrebbe essere dannoso</h3>
+<p>Succede durante lo scaricamento. Scegli <em>Mantieni</em> oppure <em>Conserva comunque</em>.</p>
+
+<h3>La finestra blu «Windows ha protetto il PC»</h3>
+<p>Compare la prima volta che apri il file. Clicca sulla scritta piccola <em>Ulteriori
+informazioni</em>, poi sul pulsante <em>Esegui comunque</em> che compare in basso.</p>
+
+<h3>Windows chiede il permesso di apportare modifiche</h3>
+<p>È la finestra del <em>Controllo dell'account utente</em>: chiede se consentire a MTDesk di
+apportare modifiche al computer e, alla voce dell'autore, riporta <strong>sconosciuto</strong>
+per il motivo detto sopra. Rispondi <em>Sì</em>.</p>
+<ul>
+  <li>Con <code>MTDesk-qs.exe</code> compare <strong>a ogni avvio</strong>: il programma chiede i
+  privilegi di amministratore perché il tecnico possa lavorare anche sulle finestre di Windows
+  che li richiedono.</li>
+  <li>Con il file di installazione compare quando l'installazione comincia.</li>
+</ul>
+<p>Se al posto del <em>Sì</em> Windows ti chiede una password di amministratore che non conosci,
+oppure se rispondi <em>No</em>, l'assistenza rapida si apre lo stesso e mostra ID e password. Il
+tecnico però potrà trovarsi bloccato davanti alle finestre che chiedono quei privilegi: diglielo
+subito, così sa come regolarsi.</p>
+
+<h3>Windows chiede se consentire l'accesso alla rete</h3>
+<p>Può comparire con l'assistenza rapida, di solito la prima volta che un tecnico si collega. La
+domanda è <em>Vuoi consentire alle reti pubbliche e private di accedere a questa app?</em>; nelle
+versioni meno recenti di Windows la finestra dice invece <em>Windows Defender Firewall ha bloccato
+alcune funzionalità di questa app</em>. Scegli il pulsante che consente l'accesso
+(<em>Consenti</em>): serve a far parlare direttamente i due computer.</p>
+<p>La versione installata non lo chiede: l'installazione registra da sé la propria regola nel
+firewall di Windows, con il nome <em>MTDesk Service</em>, e la toglie quando si disinstalla.</p>
+
+<h3>L'antivirus blocca il file, o lo fa sparire</h3>
+<p>Alcuni antivirus trattano con sospetto i programmi di controllo remoto poco diffusi e senza
+firma: possono impedirne l'apertura oppure metterli «in quarantena», cioè toglierli dalla cartella
+in cui li hai scaricati. Se il file non si trova più, o se non si apre e non compare nessuno
+degli avvisi descritti qui sopra, è probabile che sia andata così.</p>
+<p><strong>Non disattivare l'antivirus di tua iniziativa.</strong> Chiama il tecnico: ti guida lui
+a ripristinare il file dalla quarantena o ad aggiungere un'eccezione. Per riconoscere quello che
+appartiene a MTDesk: la cartella <code>%LOCALAPPDATA%\MTDesk</code>, in cui il file scaricato
+scompatta il programma, e al suo interno <code>MTDesk.exe</code> e
+<code>RuntimeBroker_mtdesk.exe</code>. Quest'ultimo è una copia di un componente di Windows che
+MTDesk tiene accanto a sé per la «modalità privacy».</p>
+</div>
+
+<h2 id="aggiornamento">Avviso di aggiornamento</h2>
+<div class="card">
+<p><strong>Cosa vedi.</strong> Nella finestra di MTDesk compare un riquadro con il titolo
+<em>Stato</em>, la frase <em>È disponibile una nuova versione di MTDesk</em> seguita dal numero
+della versione, il pulsante <em>Download</em> e, sotto, il collegamento <em>Novità programma</em>.</p>
+<p><strong>Cosa significa.</strong> All'avvio MTDesk controlla se è uscita una versione più
+recente e, se c'è, te lo dice. Si ferma lì: <strong>non scarica e non installa niente da
+solo</strong>. Finché una persona non installa la versione nuova, sul computer resta quella che
+c'è.</p>
+<p><strong>Cosa fare se sei un cliente.</strong> Niente di urgente: l'avviso non blocca il
+programma e l'assistenza funziona lo stesso. Puoi chiuderlo con la <em>X</em> (ricomparirà al
+prossimo avvio) e dirlo al tecnico: l'aggiornamento conviene farlo insieme a lui. Nel programma non
+c'è un'impostazione per non ricevere più l'avviso.</p>
+
+<h3>Windows</h3>
+<p>Il pulsante <em>Download</em> apre il browser e scarica
+<code>MTDesk-windows-x86_64-install.exe</code>, cioè il file della versione che si installa.</p>
+<ul>
+  <li><strong>Se sul computer MTDesk è installato:</strong> apri il file scaricato e conferma con
+  <em>Accetta e installa</em>. L'installazione sostituisce la versione precedente. Ricompaiono gli
+  avvisi descritti in <a href="#windows-avvisi">Windows: gli avvisi al primo avvio</a>.</li>
+  <li><strong>Se usi soltanto l'assistenza rapida</strong> (<code>MTDesk-qs.exe</code>):
+  <strong>non usare quel pulsante</strong>, perché ti farebbe scaricare il file che si installa.
+  Cancella il vecchio <code>MTDesk-qs.exe</code> e scaricalo di nuovo dalla stessa pagina da cui
+  lo avevi preso la prima volta.</li>
+</ul>
+
+<h3>Ubuntu</h3>
+<p>Il pulsante <em>Download</em> apre il browser e scarica
+<code>mtdesk-ubuntu-amd64.deb</code>. <strong>Scaricarlo non aggiorna niente</strong>: il pacchetto
+va installato con un comando che chiede la password di amministrazione del computer. Per questo su
+Ubuntu l'aggiornamento lo esegue chi amministra il PC: di solito il tecnico, oppure tu seguendo le
+sue indicazioni.</p>
+<p>Chiudi MTDesk, apri il terminale e dai:</p>
+<pre><code>cd ~/Scaricati || cd ~/Downloads
+sudo apt install ./mtdesk-ubuntu-amd64.deb</code></pre>
+<p>Il comando installa la versione nuova sopra la vecchia e riavvia da solo il servizio.</p>
+
+<h3>Che versione ho?</h3>
+<p>Nel programma completo: Impostazioni → <em>Info programma</em>, alla riga <em>Versione</em>.</p>
+<p>Su Ubuntu il file <code>mtdesk-ubuntu-amd64.deb</code> ha sempre lo stesso nome, senza numero di
+versione. Per sapere la versione <strong>installata</strong>:</p>
+<pre><code>dpkg -s mtdesk | grep Version</code></pre>
+<p>Per sapere la versione del <strong>file scaricato</strong>, prima di installarlo (da dare nella
+cartella in cui si trova il file):</p>
+<pre><code>dpkg-deb -f mtdesk-ubuntu-amd64.deb Version</code></pre>
+</div>
+
+<h2 id="disinstallare">Togliere MTDesk dal computer</h2>
+<div class="card">
+<p>Togliere il programma e togliere le sue cartelle sono due cose distinte: la disinstallazione
+rimuove il programma, ma <strong>lascia sul computer le cartelle con le impostazioni e con il
+registro degli eventi</strong>. Qui sotto ci sono entrambi i passaggi.</p>
+
+<h3>Windows, assistenza rapida (<code>MTDesk-qs.exe</code>)</h3>
+<p>Non c'è niente da disinstallare, perché questo file non si installa. Chiudi MTDesk con il
+pulsante <em>Esci</em> e cancella il file scaricato. Restano due cartelle, che il programma non
+toglie da solo quando lo chiudi:</p>
+<table>
+  <tr><th><code>%LOCALAPPDATA%\MTDesk</code></th><td>I file che il programma ha scompattato per
+  funzionare (circa 72 MB).</td></tr>
+  <tr><th><code>%APPDATA%\MTDesk</code></th><td>Impostazioni e registro degli eventi.</td></tr>
+</table>
+<p>Per aprirle: premi insieme i tasti <code>Windows</code> e <code>R</code>, incolla il percorso
+così com'è scritto e premi <code>Invio</code>. Puoi cancellarle a programma chiuso.</p>
+
+<h3>Windows, versione installata</h3>
+<ol>
+  <li>Apri le Impostazioni di Windows → <em>App</em> → <em>App installate</em> (in Windows 10:
+  <em>App e funzionalità</em>).</li>
+  <li>Cerca <strong>MTDesk</strong> nell'elenco e scegli <em>Disinstalla</em>.</li>
+</ol>
+<p>La disinstallazione ferma e rimuove il servizio di sistema, la regola del firewall, la cartella
+del programma e i collegamenti. Restano le due cartelle della tabella qui sopra e, in più, quella
+in cui il servizio teneva le proprie impostazioni e il proprio registro:</p>
+<pre><code>C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\MTDesk</code></pre>
+<p>Per cancellare quest'ultima servono i permessi di amministratore.</p>
+
+<h3>Ubuntu</h3>
+<p>Per togliere il programma e il suo servizio:</p>
+<pre><code>sudo apt remove mtdesk</code></pre>
+<p>Se al posto di <code>remove</code> scrivi <code>purge</code>, viene cancellata anche la cartella
+delle impostazioni del servizio (<code>/root/.config/mtdesk</code>):</p>
+<pre><code>sudo apt purge mtdesk</code></pre>
+<p>In entrambi i casi restano le cartelle del tuo utente e il registro del servizio. Per
+cancellare tutto quello che rimane, copia questi due comandi così come sono (su Ubuntu maiuscole e
+minuscole contano):</p>
+<pre><code>rm -rf ~/.config/mtdesk ~/.local/share/logs/MTDesk
+sudo rm -rf /root/.config/mtdesk /root/.local/share/logs/MTDesk</code></pre>
+<p>Che cosa contengono queste cartelle, e per quanto tempo MTDesk tiene il registro, è scritto
+nella pagina <a href="privacy.html#conservazione">Trattamento dei dati</a>.</p>
 </div>
 
 <h2 id="permessi-macos">macOS</h2>
@@ -130,16 +443,27 @@ solo per Windows 10/11 e per Ubuntu. Se dentro il programma trovi un riferimento
 macOS, è un residuo dell'interfaccia multilingua e non riguarda una versione esistente.</p>
 </div>
 
-<h2>Il problema non è in questo elenco</h2>
+<h2 id="segnalare">Il problema non è in questo elenco</h2>
 <div class="card">
-<p>Scrivi segnalando <strong>cosa stavi facendo</strong>, <strong>che sistema</strong> usano i due
-computer e <strong>cosa è comparso a schermo</strong>:
-<a href="https://github.com/Dario-97-it/mtdesk/issues">github.com/Dario-97-it/mtdesk/issues</a>.</p>
-<p>Se riesci, allega il registro degli eventi:</p>
+<p><strong>Se sei un cliente</strong>, rivolgiti all'assistenza di Marketing Tools:
+<code>[DA COMPLETARE: email e telefono dell'assistenza]</code>. Di' <strong>cosa stavi
+facendo</strong>, <strong>che sistema</strong> usano i due computer e <strong>cosa è comparso a
+schermo</strong>.</p>
+<p>Se l'assistenza te lo chiede, puoi consegnare il registro degli eventi. Si trova qui:</p>
 <table>
   <tr><th>Windows</th><td><code>%APPDATA%\MTDesk\log</code></td></tr>
+  <tr><th>Windows, versione installata: registro del servizio</th>
+      <td><code>C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\MTDesk\log</code></td></tr>
   <tr><th>Ubuntu</th><td><code>~/.local/share/logs/MTDesk</code></td></tr>
+  <tr><th>Ubuntu: registro del servizio</th><td><code>/root/.local/share/logs/MTDesk</code></td></tr>
 </table>
+<div class="nota attenzione"><strong>Il registro va mandato solo in privato all'assistenza, mai
+pubblicato.</strong> Dentro ci sono gli indirizzi IP dei collegamenti e possono esserci gli ID dei
+computer.</div>
+<p>Per segnalare un difetto del programma esiste anche la pagina pubblica
+<a href="https://github.com/Dario-97-it/mtdesk/issues">github.com/Dario-97-it/mtdesk/issues</a>.
+È visibile a chiunque: lì <strong>non allegare il registro degli eventi</strong> e non scrivere
+ID, password o indirizzi.</p>
 </div>
 
 <footer>

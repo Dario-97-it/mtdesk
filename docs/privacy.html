@@ -24,9 +24,19 @@ Ubuntu.</p>
 <strong>Da completare prima della pubblicazione.</strong> I dati identificativi del titolare
 (ragione sociale, indirizzo, partita IVA, indirizzo di contatto per l'esercizio dei diritti) non
 sono stati inseriti da chi ha redatto questa pagina e vanno compilati dal titolare.
+Mancano anche tre decisioni che spettano a lui: per quanto tempo il centralino conserva i dati,
+quale fornitore ospita il centralino, e chi installa gli aggiornamenti sui computer assistiti.
 Le sezioni che li richiedono sono contrassegnate con <code>[DA COMPLETARE]</code>.
 Finché restano così, questa pagina descrive correttamente il funzionamento del programma ma
 <strong>non è un'informativa completa ai sensi del GDPR</strong>.
+</div>
+
+<!-- NOTA TEMPORANEA: togliere questo riquadro quando il centralino entra in servizio. -->
+<div class="nota attenzione">
+<strong>Stato attuale.</strong> Il centralino predefinito di MTDesk
+(<code>mtdesk.marketingtools.digital</code>) <strong>non è ancora in funzione</strong>. Le parti di
+questa pagina che lo riguardano descrivono come è fatto il programma e come lavorerà il centralino
+una volta attivato. Questo riquadro va tolto quando il centralino entra in servizio.
 </div>
 
 <h2>In due righe</h2>
@@ -37,7 +47,7 @@ schermo lo vede soltanto il tecnico collegato. Il server di appoggio vede passar
 <strong>non è in grado di leggerli</strong>, perché sono cifrati da un capo all'altro.</p>
 </div>
 
-<h2>Quali dati tratta, e perché</h2>
+<h2 id="dati">Quali dati tratta, e perché</h2>
 <div class="card">
 <table>
   <tr><th>Dato</th><th>Dove sta</th><th>Perché serve</th></tr>
@@ -48,21 +58,35 @@ schermo lo vede soltanto il tecnico collegato. Il server di appoggio vede passar
     resta stabile nel tempo.</td>
   </tr>
   <tr>
+    <td><strong>Identificativo della macchina</strong> e <strong>chiave pubblica</strong></td>
+    <td>Sul computer e sul centralino</td>
+    <td>L'identificativo è quello che il sistema operativo assegna al computer; la chiave
+    pubblica la crea MTDesk la prima volta che parte. Il centralino li riceve quando il computer
+    si registra e li conserva accanto all'ID: servono a riconoscere il computer quando si
+    ripresenta e a impedire che un altro PC si presenti con il suo stesso ID.</td>
+  </tr>
+  <tr>
     <td><strong>Indirizzo IP</strong> pubblico e locale</td>
-    <td>Sul centralino</td>
+    <td>Sul centralino: nel suo archivio resta l'ultimo indirizzo pubblico con cui il computer
+    si è presentato, e gli indirizzi compaiono nei suoi registri tecnici</td>
     <td>Serve a mettere in comunicazione i due computer. È il meccanismo stesso del collegamento:
-    senza, non si può stabilire.</td>
+    senza, non si può stabilire. L'indirizzo locale non viene archiviato: il centralino lo passa
+    all'altro computer nel momento in cui parte un collegamento.</td>
   </tr>
   <tr>
     <td><strong>Nome del computer</strong> e nome utente del sistema</td>
-    <td>Mostrati al tecnico durante la sessione</td>
+    <td>Mostrati al tecnico durante la sessione e salvati sul suo computer (vedi la riga
+    «Elenco dei computer assistiti», più sotto)</td>
     <td>Permettono al tecnico di capire a quale macchina è collegato.</td>
   </tr>
   <tr>
     <td><strong>Registro eventi</strong> (log tecnico)</td>
     <td>Solo sul computer, in locale</td>
-    <td>Serve a capire i malfunzionamenti. Non viene inviato da nessuna parte: se serve, lo si
-    allega a mano a una segnalazione.</td>
+    <td>Serve a capire i malfunzionamenti. È molto dettagliato e annota anche gli eventi di
+    collegamento, compreso l'indirizzo IP da cui arriva una connessione. Non viene inviato da
+    nessuna parte: se all'assistenza serve, lo si consegna a mano e <strong>in privato</strong>,
+    mai in una pagina pubblica. Durata e cartelle sono in
+    <a href="#conservazione">Per quanto tempo</a>.</td>
   </tr>
   <tr>
     <td><strong>Password di sessione</strong></td>
@@ -75,52 +99,143 @@ schermo lo vede soltanto il tecnico collegato. Il server di appoggio vede passar
     <td>Serve se il cliente vuole che il tecnico possa entrare senza dover confermare ogni volta.
     È una scelta del cliente, non è attiva per default.</td>
   </tr>
+  <tr>
+    <td><strong>Elenco dei computer assistiti</strong> («Sessioni recenti»)</td>
+    <td>Sul computer del tecnico</td>
+    <td>Dopo un collegamento, il MTDesk di chi dà assistenza ricorda l'ID, il nome del computer,
+    il nome utente e il sistema del PC assistito, per poterlo richiamare. Se il tecnico spunta
+    «Ricorda password», salva anche la password di accesso, in forma cifrata.</td>
+  </tr>
 </table>
 <p><strong>Quello che MTDesk non fa:</strong> non raccoglie statistiche d'uso, non manda dati
-pubblicitari, non profila, non registra automaticamente le sessioni, non legge i file del computer
-al di fuori di un trasferimento richiesto durante una sessione, e non invia alcuna impronta del
-dispositivo a nessun servizio.</p>
+pubblicitari, non profila, non legge i file del computer al di fuori di un trasferimento richiesto
+durante una sessione, e non invia l'identificativo della macchina a nessun servizio diverso dal
+centralino.</p>
+<p><strong>Che traccia resta di una sessione.</strong> MTDesk non tiene un elenco delle sessioni
+svolte (chi si è collegato, quando e per quanto tempo). Quello che resta sono le righe del
+registro eventi sui due computer e la voce in «Sessioni recenti» sul computer del tecnico.
+Per impostazione predefinita non registra nemmeno in video quello che accade: la registrazione
+di una sessione esiste come funzione, ma è spenta. Parte solo se qualcuno la avvia a mano dalla
+barra della sessione o la attiva nelle impostazioni (Impostazioni → Generale → Registrazione), e
+il filmato resta sul computer di chi registra.</p>
 </div>
 
-<h2>Verso chi escono dei dati</h2>
+<h2 id="destinatari">Verso chi escono dei dati</h2>
 <div class="card">
 <h3>Il centralino di Marketing Tools</h3>
-<p>È il server a cui MTDesk si collega per trovare l'altro computer. Riceve l'ID e gli indirizzi IP.
-È gestito direttamente da Marketing Tools e <strong>non è un servizio di terzi</strong>. I contenuti
+<p>È il server a cui MTDesk si collega per trovare l'altro computer. Riceve l'ID, l'identificativo
+della macchina, la chiave pubblica e gli indirizzi IP. Il programma che lo fa funzionare è gestito
+direttamente da Marketing Tools e <strong>non è un servizio di terzi</strong>. I contenuti
 della sessione (schermo, tastiera, file) gli passano attraverso solo quando il collegamento diretto
 non è possibile, e in quel caso sono cifrati: il server li inoltra senza poterli leggere.</p>
+<p>Il centralino gira però su un server preso a noleggio da un fornitore di hosting, che per questo
+tratta i dati per conto di Marketing Tools (in termini di legge è un «responsabile del
+trattamento»): <code>[DA COMPLETARE: nome del fornitore di hosting e paese del data center. Il
+progetto prevede Oracle Cloud, regione di Francoforte (Germania, Unione Europea): da confermare
+quando il centralino viene messo in opera]</code></p>
+<p><strong>Una cosa da sapere.</strong> Il centralino è raggiungibile da internet e non ha modo di
+distinguere il computer di un cliente da quello di un estraneo: chiunque lo contatti con un
+programma compatibile viene registrato allo stesso modo (ID, identificativo della macchina, chiave
+pubblica, indirizzo IP), anche se non è cliente di Marketing Tools. Registrarsi non basta per
+entrare in un computer: per quello serve la sua password, oppure che la persona davanti a quel
+computer accetti la richiesta di collegamento.</p>
 
-<h3>GitHub (controllo versione e download)</h3>
-<p>Questa è l'unica uscita verso un fornitore esterno, e va detta chiaramente. All'avvio MTDesk
+<h3>GitHub (controllo versione, download e queste pagine)</h3>
+<p>È un'uscita verso un fornitore esterno, e va detta chiaramente. All'avvio MTDesk
 legge un piccolo file pubblico ospitato su <strong>GitHub Pages</strong> per sapere se esiste una
 versione più recente. È una lettura come aprire una pagina web: MTDesk non invia nulla, ma
 <strong>GitHub, come qualunque sito, vede l'indirizzo IP di chi effettua la richiesta</strong>.
-Lo stesso vale quando si scarica il programma dalla pagina delle release.</p>
-<p>Il controllo si può disattivare: nelle impostazioni di MTDesk, oppure semplicemente bloccando
-l'accesso a quel dominio. Se GitHub è irraggiungibile il programma funziona normalmente e non
-segnala errori.</p>
+Lo stesso vale quando si scarica il programma dalla pagina delle release e quando si apre una di
+queste pagine di aiuto, che stanno sullo stesso servizio.</p>
+<p>Nel programma <strong>non c'è un'impostazione per spegnere questo controllo</strong>. Chi non
+lo vuole può bloccare, nel firewall o nel router, l'accesso al dominio
+<code>dario-97-it.github.io</code> (così però non si aprono nemmeno queste pagine). Se GitHub è
+irraggiungibile il programma funziona normalmente e non segnala errori.</p>
 
-<h3>Nessun altro</h3>
-<p>MTDesk non contatta nessun altro servizio. In particolare, pur derivando dal codice di un altro
+<h3>Server STUN di Google, Cloudflare e Nextcloud</h3>
+<p>È la seconda uscita verso fornitori esterni. All'avvio MTDesk cerca di capire se il computer ha
+un indirizzo internet di nuova generazione (IPv6) raggiungibile dall'esterno. Per saperlo fa una
+domanda brevissima, «con quale indirizzo mi vedi?», a tre server pubblici di un tipo chiamato
+STUN, gestiti da <strong>Google</strong>, <strong>Cloudflare</strong> e
+<strong>Nextcloud</strong> (<code>stun.l.google.com</code>, <code>stun.cloudflare.com</code>,
+<code>stun.nextcloud.com</code>). La domanda non contiene l'ID né altri dati del computer, ma
+<strong>chi la riceve vede l'indirizzo IP da cui parte</strong>. Se la connessione del computer non
+ha IPv6 la domanda non parte: resta soltanto la ricerca di quei tre nomi nel servizio DNS.</p>
+<p>Nel programma completo, in Impostazioni → Generale → Altro, ci sono due caselle che riguardano
+questo meccanismo, <strong>spente per impostazione predefinita</strong>: «Abilita hole punching
+UDP» e «Abilita connessione P2P IPv6». Con la prima attiva, la stessa domanda parte anche con
+l'indirizzo tradizionale (IPv4) ogni volta che da quel computer si avvia un collegamento. Con la
+seconda, la domanda IPv6 viene ripetuta all'avvio di un collegamento.</p>
+
+<h3>Un caso particolare: reti con il solo IPv6</h3>
+<p>Su una rete che ha soltanto IPv6, per raggiungere un indirizzo di tipo tradizionale MTDesk
+chiede al servizio DNS un nome del tipo <code>indirizzo.nip.io</code>. <strong>nip.io</strong> è
+un servizio pubblico di terzi che traduce nomi fatti così: la richiesta passa dal DNS configurato
+sul computer e contiene l'indirizzo che si vuole raggiungere (il centralino o l'altro computer).
+Sulle reti comuni, che hanno anche IPv4, questo non accade.</p>
+
+<h3>Nessun altro, salvo funzioni che attivi tu</h3>
+<p>Per impostazione predefinita MTDesk non contatta nessun altro servizio. Esistono funzioni
+facoltative che portano altrove solo se chi usa il programma le attiva di sua iniziativa (per
+esempio l'invio dei codici della verifica in due passaggi a un bot Telegram): finché nessuno le
+attiva restano spente. In particolare, pur derivando dal codice di un altro
 programma, <strong>non comunica con i server di quel progetto</strong>: le chiamate verso il loro
 servizio di aggiornamento e verso il loro server di amministrazione sono state rimosse dal codice.</p>
 </div>
 
-<h2>Per quanto tempo</h2>
+<h2 id="conservazione">Per quanto tempo</h2>
 <div class="card">
 <ul>
-  <li><strong>Sul computer del cliente:</strong> impostazioni e registro restano finché il programma
-  è installato. Si cancellano disinstallandolo ed eliminando la cartella delle impostazioni
-  (<code>%APPDATA%\MTDesk</code> su Windows, <code>~/.config/MTDesk</code> su Ubuntu).</li>
-  <li><strong>Sul centralino:</strong> ID e ultimo indirizzo IP noto restano registrati per
-  permettere i collegamenti successivi. <code>[DA COMPLETARE: periodo di conservazione deciso dal
+  <li><strong>Sul computer del cliente, le impostazioni:</strong> restano finché non vengono
+  cancellate. <strong>Disinstallare il programma non le elimina</strong>: vanno tolte a mano,
+  cancellando le cartelle elencate qui sotto.</li>
+  <li><strong>Sul computer del cliente, il registro eventi:</strong> si rinnova da solo. MTDesk
+  apre un file nuovo a ogni avvio (e a ogni cambio di giorno, se resta acceso), tiene gli ultimi
+  31 file per ciascuna delle sue parti e cancella i più vecchi. Non c'è quindi una scadenza in
+  giorni: 31 file possono coprire poche giornate o più di un mese, secondo quanto si usa il
+  programma. Il livello di dettaglio è alto: è quello che i programmatori chiamano «debug».</li>
+  <li><strong>Sul computer del tecnico:</strong> l'elenco «Sessioni recenti» e le password
+  ricordate restano finché il tecnico non le toglie (menu della scheda del computer: «Elimina» e
+  «Dimentica password») o non cancella la cartella delle impostazioni. Sono dati da proteggere:
+  quel computer va tenuto sotto password e, se di quella cartella si fa una copia di sicurezza,
+  la copia va cifrata.</li>
+  <li><strong>Sul centralino:</strong> ID, identificativo della macchina, chiave pubblica e ultimo
+  indirizzo IP noto restano registrati per permettere i collegamenti successivi. Oggi il
+  centralino <strong>non cancella nulla da solo</strong>: una riga resta finché qualcuno non la
+  elimina a mano, e questo vale anche per le righe lasciate da computer estranei.
+  <code>[DA COMPLETARE: periodo di conservazione deciso dal
   titolare e procedura di cancellazione periodica]</code></li>
-  <li><strong>Contenuti delle sessioni:</strong> non vengono conservati da nessuna parte. Terminata
-  la sessione non resta nulla, salvo i file che il tecnico ha trasferito su richiesta.</li>
+  <li><strong>Nei registri tecnici del centralino:</strong> compaiono ID e indirizzi IP dei
+  computer che si registrano e delle richieste di collegamento. Questi registri hanno una
+  dimensione massima: raggiunta quella, le righe più vecchie vengono eliminate.</li>
+  <li><strong>Contenuti delle sessioni:</strong> per impostazione predefinita non vengono
+  conservati da nessuna parte. Terminata la sessione non resta nulla, salvo i file che il tecnico
+  ha trasferito su richiesta e, se qualcuno l'ha avviata, la registrazione video descritta più
+  sopra.</li>
 </ul>
+
+<h3>Dove stanno impostazioni e registro sul computer</h3>
+<table>
+  <tr><th>Windows: impostazioni e registro dell'utente</th>
+      <td><code>%APPDATA%\MTDesk</code></td></tr>
+  <tr><th>Windows: file che il programma scompatta per funzionare</th>
+      <td><code>%LOCALAPPDATA%\MTDesk</code></td></tr>
+  <tr><th>Windows, solo versione installata: impostazioni e registro del servizio</th>
+      <td><code>C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\MTDesk</code></td></tr>
+  <tr><th>Ubuntu: impostazioni dell'utente</th>
+      <td><code>~/.config/mtdesk</code></td></tr>
+  <tr><th>Ubuntu: registro dell'utente</th>
+      <td><code>~/.local/share/logs/MTDesk</code></td></tr>
+  <tr><th>Ubuntu: impostazioni e registro del servizio</th>
+      <td><code>/root/.config/mtdesk</code> e <code>/root/.local/share/logs/MTDesk</code></td></tr>
+</table>
+<p>Su Ubuntu maiuscole e minuscole contano: i nomi vanno scritti esattamente così. Il comando
+<code>sudo apt purge mtdesk</code> toglie il programma e la sola cartella
+<code>/root/.config/mtdesk</code>; le altre restano e si cancellano a mano. I passi, uno per uno,
+sono nella pagina di aiuto: <a href="aiuto.html#disinstallare">Togliere MTDesk dal computer</a>.</p>
 </div>
 
-<h2>Base giuridica e titolare</h2>
+<h2 id="titolare">Base giuridica e titolare</h2>
 <div class="card">
 <p>Il trattamento serve a <strong>erogare l'assistenza tecnica richiesta</strong>: la base giuridica
 è l'esecuzione del rapporto con il cliente, e per i dati tecnici strettamente necessari al
@@ -133,25 +248,67 @@ opposizione, portabilità) e per qualsiasi domanda sul trattamento:
 <p>È sempre possibile proporre reclamo al Garante per la protezione dei dati personali.</p>
 </div>
 
-<h2>Il controllo resta al cliente</h2>
+<h2 id="controllo">Il controllo resta al cliente</h2>
 <div class="card">
 <p>Sono scelte che il cliente può fare in qualsiasi momento, senza passare dal tecnico:</p>
 <ul>
-  <li><strong>Chiudere il programma</strong> interrompe ogni possibilità di collegamento.</li>
+  <li><strong>Chiudere il programma</strong> interrompe ogni possibilità di collegamento quando si
+  usa il file di assistenza rapida per Windows, che non si installa. Con la versione installata
+  (il file «install» per Windows e il pacchetto per Ubuntu) resta invece attivo un servizio in
+  sottofondo anche a finestra chiusa: per fermarlo senza disinstallare, Impostazioni → Generale
+  → Servizio → «Ferma».</li>
   <li><strong>Non impostare la password permanente</strong> significa che nessuno può entrare senza
   che il cliente comunichi la password del momento.</li>
-  <li><strong>Disinstallare</strong> rimuove il programma e il servizio di sistema.</li>
+  <li><strong>Disinstallare</strong> rimuove il programma e il servizio di sistema. Le cartelle
+  con impostazioni e registro restano: come toglierle è scritto in
+  <a href="#conservazione">Per quanto tempo</a>.</li>
   <li>Durante una sessione, il cliente <strong>vede sempre</strong> che qualcuno è collegato e può
-  chiudere il collegamento.</li>
+  chiudere il collegamento. C'è una sola eccezione, e dipende da un'impostazione del computer del
+  cliente, spenta per impostazione predefinita: «Nascondi la finestra di gestione delle
+  connessioni», che si può attivare soltanto quando si accettano sessioni con la sola password
+  permanente.</li>
+  <li><strong>Due permessi che conviene conoscere.</strong> Su Windows il tecnico può attivare la
+  «modalità privacy», che copre lo schermo del cliente mentre lavora, e può bloccare per il tempo
+  necessario mouse e tastiera del cliente. Sono permessi che il programma concede per
+  impostazione predefinita e che il cliente può togliere nel programma completo: Impostazioni →
+  Sicurezza → Permessi, voci «Abilita modalità privacy» e «Abilita blocco input utente».</li>
+  <li><strong>Su Ubuntu è il sistema a chiedere il permesso.</strong> Quando Ubuntu usa il
+  sistema grafico Wayland (è il caso normale sulle versioni recenti), nel momento in cui un
+  tecnico si collega è Ubuntu stesso a mostrare una richiesta di condivisione dello schermo: se
+  viene rifiutata, lo schermo non viene trasmesso. Ubuntu può ricordare la scelta; per farsela
+  chiedere di nuovo, in MTDesk: Impostazioni → Generale → Wayland → «Annulla selezione schermata
+  Wayland» (il riquadro compare solo se una scelta è stata memorizzata). Questo vale per il
+  pacchetto che viene distribuito
+  (<code>mtdesk-ubuntu-amd64.deb</code>). Nel codice sorgente esiste anche una variante diversa
+  (<code>mtdesk-unattended-wayland</code>) che cattura lo schermo senza passare da quella
+  richiesta: oggi non è né costruita né distribuita.</li>
 </ul>
 </div>
 
-<h2>Licenza del programma</h2>
+<h2 id="aggiornamenti">Aggiornamenti</h2>
+<div class="card">
+<p>MTDesk <strong>non scarica e non installa aggiornamenti da solo</strong>. All'avvio controlla se
+esiste una versione più recente (è la lettura da GitHub descritta sopra) e, se c'è, mostra un
+avviso nella finestra principale. Installare la versione nuova resta il gesto di una persona: i
+passi sono nella pagina di aiuto, alla voce
+<a href="aiuto.html#aggiornamento">Avviso di aggiornamento</a>.</p>
+<p>Ne segue una cosa da sapere: un computer su cui gira soltanto il servizio in sottofondo, senza
+che nessuno apra mai la finestra di MTDesk, quell'avviso non lo vede. Su quei computer la versione
+nuova arriva solo se qualcuno la installa.
+<code>[DA COMPLETARE: chi installa gli aggiornamenti sui computer assistiti ed entro quanto tempo
+quando si tratta di correzioni di sicurezza]</code></p>
+</div>
+
+<h2 id="licenza">Licenza del programma</h2>
 <div class="card">
 <p>MTDesk è distribuito gratuitamente sotto licenza <strong>GNU AGPL versione 3</strong>. Non c'è
 nessun costo, nessun limite di tempo, nessuna licenza da acquistare. Chi riceve il programma ha
 diritto a ottenerne il codice sorgente: per questo il codice è pubblico su
 <a href="https://github.com/Dario-97-it/mtdesk">github.com/Dario-97-it/mtdesk</a>.</p>
+<p>Il testo integrale della licenza è nel file
+<a href="https://github.com/Dario-97-it/mtdesk/blob/main/LICENSE">LICENSE</a> dello stesso
+repository. Come stabilisce la licenza stessa, il programma è fornito così com'è, senza
+garanzie.</p>
 <p>MTDesk è un'opera derivata di un progetto preesistente rilasciato con la stessa licenza; non è
 affiliato a quel progetto né da esso approvato. L'elenco verificabile delle modifiche è nel
 repository.</p>

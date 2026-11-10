@@ -4,20 +4,65 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Assistenza remota — Marketing Tools</title>
-<meta name="description" content="Scarica MTDesk e fatti assistere a distanza da Marketing Tools. Nessuna installazione, la sessione dura solo il tempo della chiamata.">
+<meta name="description" content="Scarica MTDesk e fatti assistere a distanza da Marketing Tools: apri il programma e leggi due codici al telefono. Su Windows si usa anche senza installarlo.">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#0A0A14">
-<!-- Open Graph: se carichi anche brand/mt-og-image.png sul sito, metti qui il suo URL -->
+<!--
+  ==========================================================================
+  PRIMA DI PUBBLICARE
+  Promemoria per chi mette online questa pagina. I clienti non lo vedono;
+  a pubblicazione fatta si può cancellare.
+
+  La pagina è pronta per i clienti solo quando tutte e cinque le voci qui
+  sotto sono a posto.
+
+  1. SEGNAPOSTO. Cerca nel file la parola INSERIRE. Ogni riquadro tratteggiato
+     [INSERIRE ...] è un dato che solo Marketing Tools può fornire: email e
+     telefono di assistenza, periodo di conservazione dei dati sul server,
+     titolare del trattamento, contatto privacy. Va sostituito tutto il testo,
+     parentesi quadre comprese; per far sparire anche il tratteggio, togli
+     class="ph" dalla stessa riga. Altri due segnaposto non si vedono a
+     schermo: sono qui sotto, alle righe og:url e og:image.
+  2. DOWNLOAD. I tre pulsanti funzionano solo se su GitHub esiste una Release
+     pubblicata che contiene i file con questi nomi esatti: MTDesk-qs.exe,
+     MTDesk-windows-x86_64-install.exe, mtdesk-ubuntu-amd64.deb.
+     Provali uno per uno: se compare una pagina "404", la Release manca.
+  3. PAGINE COLLEGATE. I link "Trattamento dei dati" e "pagina di aiuto"
+     portano a https://dario-97-it.github.io/mtdesk/ e rispondono solo dopo
+     aver attivato GitHub Pages (nel repository: Settings, poi Pages, branch
+     main, cartella /docs). Anche l'informativa ha i suoi segnaposto da
+     compilare: sono in docs/privacy.html.
+  4. SERVER. MTDesk cerca il server mtdesk.marketingtools.digital. Se quel
+     nome non risponde, il cliente apre il programma ma il tecnico non riesce
+     a collegarsi: va verificato prima di mandare qui i clienti.
+  5. PROVA VERA. Con i file scaricati da questi pulsanti, fai una sessione di
+     assistenza completa fra due computer: dal computer del tecnico si deve
+     vedere e comandare lo schermo dell'altro. Finché questa prova non è
+     riuscita, la pagina non va data ai clienti.
+  ==========================================================================
+-->
+<!-- Open Graph: è l'anteprima che compare quando il link viene condiviso (WhatsApp, Facebook, LinkedIn...) -->
 <meta property="og:title" content="Assistenza remota — Marketing Tools">
 <meta property="og:description" content="Scarica MTDesk, leggi i due codici al telefono, e ti aiutiamo noi.">
 <meta property="og:type" content="website">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<!-- DA COMPLETARE quando si conosce l'indirizzo definitivo di questa pagina.
+     Le due righe qui sotto sono spente apposta: finché contengono un segnaposto farebbero solo danno.
+     Per accenderle: sostituisci i due testi fra parentesi quadre con indirizzi completi (devono
+     cominciare con https://) e sposta le due righe fuori da questo commento.
+     L'immagine è brand/mt-og-image.png (1200 x 630 pixel): va caricata sul sito insieme alla pagina.
+<meta property="og:url" content="[INSERIRE INDIRIZZO COMPLETO DI QUESTA PAGINA]">
+<meta property="og:image" content="[INSERIRE INDIRIZZO COMPLETO DELL'IMMAGINE mt-og-image.png]">
+-->
+<!-- Icona nella scheda del browser: è brand/icons/mtdesk-32.png scritta dentro la pagina,
+     così per l'icona non c'è nessun altro file da caricare sul sito. -->
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
 <style>
 /* ==========================================================================
-   Assistenza remota MTDesk - pagina unica, nessuna dipendenza esterna
-   a parte il font Inter. Funziona anche aperta con doppio clic.
+   Assistenza remota MTDesk - pagina unica, nessuna dipendenza esterna:
+   non carica file, font o script da altri siti (anche l'icona è scritta
+   dentro la pagina). Funziona anche aperta con doppio clic.
+   Il carattere è Inter se è installato sul dispositivo di chi guarda,
+   altrimenti quello di sistema: è la stessa scelta delle pagine in docs/.
    Design system Marketing Tools: vedi brand/BRAND-MTDESK.md
    ========================================================================== */
 
@@ -220,8 +265,10 @@ ol.steps li::before{
   background:var(--gradient-brand-cool);
   box-shadow:0 0 18px rgba(0,188,212,.25);
 }
-ol.steps b{display:block;font-weight:600;font-size:1.04rem;margin-bottom:2px}
+/* Solo il titolo del passo va a capo da solo; i grassetti dentro la frase restano nella frase */
+ol.steps li > b{display:block;font-weight:600;font-size:1.04rem;margin-bottom:2px}
 ol.steps p{margin:0;color:var(--muted);font-size:.95rem}
+ol.steps p b{color:#fff;font-weight:600}
 
 /* ----------------------------------------------------------------- avvisi - */
 .alert{
@@ -334,7 +381,9 @@ code{
 /* ----------------------------------------------------------------- footer - */
 .help{text-align:center;padding:8px 0 0}
 .help p{margin:0 0 6px}
-.help .ph{
+/* Segnaposto: dati che Marketing Tools deve ancora inserire.
+   Restano ben visibili finché non vengono compilati. */
+.ph{
   display:inline-block;
   padding:3px 10px;
   border-radius:8px;
@@ -344,6 +393,8 @@ code{
   font-weight:600;
   font-size:.95rem;
 }
+/* Dentro le note scritte in piccolo il segnaposto prende la misura del testo intorno */
+.hint .ph{font-size:1em;margin:2px 0}
 
 footer{
   margin-top:34px;
@@ -407,7 +458,7 @@ footer a:hover{color:#BFF3F9}
       <a class="btn"
          href="https://github.com/Dario-97-it/mtdesk/releases/latest/download/mtdesk-ubuntu-amd64.deb">
         <span class="btn-label">Ubuntu / Linux</span>
-        <span class="btn-note">mtdesk-ubuntu-amd64.deb</span>
+        <span class="btn-note">mtdesk-ubuntu-amd64.deb · va installato: leggi il riquadro per Ubuntu più sotto</span>
       </a>
     </div>
 
@@ -416,12 +467,20 @@ footer a:hover{color:#BFF3F9}
       Su Windows fai doppio clic sul file scaricato.
     </p>
     <p class="dl-foot">
-      <b>Differenza fra i due file per Windows, in una riga.</b>
-      Il primo (<i>assistenza adesso</i>) si apre, mostra i codici e si chiude: non si installa e
-      non si avvia da solo quando riaccendi il computer — scompatta i suoi file in una cartella
-      temporanea del tuo profilo, che puoi cancellare quando vuoi.
-      Il secondo (<i>installa e resta</i>) chiede il permesso di installarsi e rimane sul computer:
-      serve soltanto se l'assistenza deve poter entrare più volte nel tempo.
+      <b>Hai un Mac, un iPhone, un iPad, oppure un telefono o un tablet Android?</b>
+      Per questi dispositivi MTDesk non esiste: c'è solo per i computer con Windows (10 e 11, a 64 bit)
+      e con Ubuntu, e i file di questa pagina altrove non si aprono. Non scaricare nulla e contattaci:
+      i recapiti sono <a href="#t-help">in fondo alla pagina</a>.
+    </p>
+    <p class="dl-foot">
+      <b>Differenza fra i due file per Windows, in breve.</b>
+      Il primo (<i>assistenza adesso</i>) si apre, mostra i codici e lo chiudi quando hai finito: non si
+      installa e non si avvia da solo quando riaccendi il computer. Per funzionare scompatta i suoi file
+      in una cartella del tuo profilo e ci salva le sue impostazioni: restano lì anche dopo la chiusura,
+      e puoi cancellarle quando vuoi (come si fa è scritto <a href="#t-privacy">più sotto</a>).
+      Il secondo (<i>installa e resta</i>) chiede il permesso di installarsi e rimane sul computer, con
+      un servizio che parte da solo a ogni accensione: serve soltanto se l'assistenza deve poter entrare
+      più volte nel tempo.
     </p>
   </section>
 
@@ -434,15 +493,19 @@ footer a:hover{color:#BFF3F9}
       <li>
         <b>Scarica e apri</b>
         <p>Doppio clic sul file che hai appena scaricato. Si apre una finestra con il nome MTDesk.
-           Su Windows non c&rsquo;è niente da installare e non serve la password del computer.
+           Su Windows, con il file &ldquo;assistenza adesso&rdquo;, non c&rsquo;è niente da installare.
+           Appena lo apri, però, Windows ti chiede una conferma: rispondi <b>Sì</b>. È la finestra
+           descritta nel riquadro
+           <a href="#t-smartscreen">&ldquo;Windows dirà che non conosce il programma&rdquo;</a> qui sotto.
            Se hai Ubuntu, il passaggio è un po&rsquo; diverso: segui il riquadro
            <a href="#t-ubuntu">&ldquo;Se hai Ubuntu o Linux&rdquo;</a> qui sotto. In nessuno dei due
            casi devi creare un account.</p>
       </li>
       <li>
         <b>Leggi al telefono i due codici</b>
-        <p>Nella finestra, sotto la voce <b>&ldquo;Questo desktop&rdquo;</b>, vedrai un <b>ID</b> di 9 cifre e una
-           <b>Password</b> breve. Leggili al tecnico che hai al telefono: sono gli unici dati che ti chiediamo.</p>
+        <p>Nella finestra, sotto la voce <b>&ldquo;Questo desktop&rdquo;</b>, vedrai un <b>ID</b> (un numero lungo,
+           di solito di 9 cifre) e una <b>Password monouso</b> di pochi caratteri. Leggili al tecnico che hai
+           al telefono: sono gli unici dati che ti chiediamo.</p>
       </li>
       <li>
         <b>Resta al telefono e guarda</b>
@@ -474,8 +537,21 @@ footer a:hover{color:#BFF3F9}
       <li>Poi clicca sul pulsante <kbd>Esegui comunque</kbd> che compare in basso.</li>
       <li>Se durante lo scaricamento il browser dice che il file <b>&ldquo;potrebbe essere dannoso&rdquo;</b>,
           scegli <kbd>Mantieni</kbd> oppure <kbd>Conserva comunque</kbd>.</li>
-      <li>Se compare la finestra <b>&ldquo;Consentire a questa app di apportare modifiche?&rdquo;</b>,
-          rispondi <kbd>Sì</kbd>.</li>
+      <li><b>Poi Windows fa una seconda domanda.</b> Quando il programma parte, compare una finestra che
+          chiede se vuoi consentire a questa app, di <b>&ldquo;autore sconosciuto&rdquo;</b>, di apportare
+          modifiche al dispositivo. Il motivo di quel &ldquo;sconosciuto&rdquo; è lo stesso di prima: manca
+          il certificato a pagamento. Rispondi <kbd>Sì</kbd>. Con il file &ldquo;assistenza adesso&rdquo;
+          questa domanda compare ogni volta che lo apri, non solo la prima: serve a permettere al tecnico
+          di intervenire anche sulle finestre che richiedono i permessi di amministratore. Una richiesta
+          simile compare anche con il file che si installa, quando premi <kbd>Accetta e installa</kbd>:
+          lì però la finestra nomina il <b>&ldquo;Processore dei comandi di Windows&rdquo;</b>, un
+          componente di Windows che MTDesk usa per installarsi. Rispondi <kbd>Sì</kbd> anche in quel
+          caso.</li>
+      <li><b>Se quella finestra ti chiede un nome utente e una password</b>, vuol dire che il tuo
+          utente di Windows non è amministratore del computer. Se conosci la password
+          dell&rsquo;amministratore, scrivila; se non la conosci, scegli <kbd>No</kbd>: con il file
+          &ldquo;assistenza adesso&rdquo; MTDesk si apre lo stesso, e il tecnico ti dice come
+          procedere.</li>
     </ul>
 
     <p class="hint">
@@ -488,6 +564,13 @@ footer a:hover{color:#BFF3F9}
   <section class="card" aria-labelledby="t-ubuntu">
     <h2 class="card-title" id="t-ubuntu"><span class="dot linux" aria-hidden="true"></span>Se hai Ubuntu o Linux</h2>
     <p class="card-sub">Qui serve un comando. Copialo, incollalo nel Terminale e premi Invio.</p>
+
+    <p class="hint" style="margin:0 0 14px">
+      <b>Su Ubuntu MTDesk va installato.</b> Una versione che &ldquo;si apre e basta&rdquo;, come quella
+      per Windows, per Ubuntu non esiste: l&rsquo;unico file è il pacchetto <code>.deb</code>, fatto per
+      Ubuntu 22.04 o più recente su computer a 64 bit con processore Intel o AMD. Dopo
+      l&rsquo;installazione il programma resta sul computer e parte da solo a ogni accensione.
+    </p>
 
     <p>Apri il <b>Terminale</b> (tasti <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>) e incolla queste due righe:</p>
 <pre><code>cd ~/Scaricati || cd ~/Downloads
@@ -504,10 +587,20 @@ sudo apt install ./mtdesk-ubuntu-amd64.deb</code></pre>
 
     <p style="margin-top:18px">
       <b>Una cosa da sapere sulle versioni recenti di Ubuntu.</b>
-      Alla prima apertura il sistema può mostrare una richiesta di <b>condivisione dello schermo</b>
+      Su queste versioni è il sistema, non MTDesk, a decidere chi può guardare lo schermo. Quando il
+      tecnico si collega, il sistema può mostrarti una richiesta di <b>condivisione dello schermo</b>
       (una finestra tipo &ldquo;Vuoi condividere il contenuto dello schermo?&rdquo;). Scegli
       <b>lo schermo intero</b> e conferma con <kbd>Condividi</kbd>: se la rifiuti o la chiudi,
       il tecnico vedrà solo una schermata nera.
+    </p>
+    <p>
+      <b>Per questo, su Ubuntu, l&rsquo;assistenza si fa con te davanti al computer.</b>
+      Quella richiesta la puoi accettare solo tu, dal tuo schermo; e la schermata iniziale, quella in
+      cui scrivi la tua password dopo l&rsquo;accensione, con le impostazioni normali di Ubuntu il
+      tecnico non la può vedere: devi essere già entrato. Se ti serve che il tecnico possa collegarsi
+      quando non ci sei, parlane prima con lui: su Ubuntu non possiamo garantirlo. La spiegazione
+      tecnica è nella
+      <a href="https://dario-97-it.github.io/mtdesk/aiuto.html#x11-richiesto">pagina di aiuto di MTDesk, nella parte dedicata a Ubuntu</a>.
     </p>
   </section>
 
@@ -517,36 +610,108 @@ sudo apt install ./mtdesk-ubuntu-amd64.deb</code></pre>
 
     <ul class="do">
       <li><b>La sessione è cifrata.</b> Quello che passa tra il tuo computer e quello del tecnico viaggia
-          protetto da una chiave creata sul momento dai due computer. Il nostro server serve solo a farli
-          incontrare e non è in grado di leggere il contenuto della sessione.</li>
-      <li><b>Nessuno entra senza la tua password.</b> Il tecnico può collegarsi solo se gli detti la
-          password che compare sul tuo schermo. Quella password viene generata di nuovo ogni volta che
-          apri il programma: non resta valida per sempre.</li>
-      <li><b>Su Windows funziona solo con il programma aperto.</b> Finché la finestra di MTDesk è aperta il
-          collegamento è possibile; quando la chiudi, la connessione cade e nessuno può più entrare.
-          Per ricominciare servono un nuovo ID e una nuova password.</li>
+          protetto da una chiave creata sul momento dai due computer. Il nostro server serve a farli
+          incontrare e, quando il collegamento diretto fra i due non riesce, a fare da ponte: in nessuno
+          dei due casi è in grado di leggere il contenuto della sessione.</li>
+      <li><b>Nessuno entra senza il tuo permesso.</b> Il tecnico può collegarsi solo se gli detti la
+          password che compare sul tuo schermo, oppure se premi tu <kbd>Accetta</kbd> nella finestra di
+          richiesta che MTDesk ti mostra. Quella password vale per una volta sola: alla fine di ogni
+          collegamento MTDesk la sostituisce con una nuova, e lo stesso fa ogni volta che il programma
+          riparte. Se compare una richiesta di collegamento che non stavi aspettando, premi
+          <kbd>Annulla</kbd>.
+          <br>C'è una sola eccezione, e dipende da una tua scelta: la <b>password permanente</b>,
+          spiegata più sotto.</li>
+      <li><b>Con il file "assistenza adesso", a programma chiuso non entra nessuno.</b> Finché la finestra
+          di MTDesk è aperta il collegamento è possibile; quando la chiudi (con la X o con il pulsante
+          <kbd>Esci</kbd>), la connessione cade e nessuno può più entrare. Quando la riapri l'<b>ID</b>
+          è lo stesso di prima: non cambia. La <b>password</b>, invece, è nuova.</li>
       <li><b>Su Windows, con il file "assistenza adesso", non si installa nulla.</b>
           <code>MTDesk-qs.exe</code> non aggiunge programmi all'avvio del computer e non lascia servizi
           in esecuzione: chiuso MTDesk il collegamento non è più possibile, e puoi cancellare il file
-          scaricato. Per funzionare scompatta i propri file in una cartella temporanea dentro il tuo
-          profilo utente; se vuoi rimuovere anche quella, si trova in
-          <code>%LOCALAPPDATA%\MTDesk</code> e si può cancellare a programma chiuso.
+          scaricato. Qualcosa sul disco però resta, ed è giusto che tu lo sappia. Per funzionare il
+          programma scompatta i propri file (circa 70 MB) nella cartella
+          <code>%LOCALAPPDATA%\MTDesk</code>, e salva il tuo ID, le impostazioni e il registro degli
+          eventi nella cartella <code>%APPDATA%\MTDesk</code>. Nessuna delle due viene cancellata alla
+          chiusura.
+          <br>Per togliere tutto, a programma chiuso cancellale entrambe: premi i tasti
+          <kbd>Windows</kbd> + <kbd>R</kbd>, scrivi <code>%LOCALAPPDATA%</code>, premi Invio ed elimina
+          la cartella <b>MTDesk</b>; poi fai lo stesso con <code>%APPDATA%</code>. Possono restare anche
+          due piccole cartelle di servizio, che il programma usa solo mentre è aperto:
+          <code>C:\ProgramData\MTDesk</code> e, se alla domanda di Windows hai risposto <kbd>Sì</kbd>,
+          <code>C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\MTDesk</code>, dove finisce
+          un registro degli eventi. Per eliminare la prima possono servire i permessi di amministratore;
+          per la seconda servono sempre.
           <br>L'altro file, <code>…-install.exe</code>, fa il contrario: si installa e resta. Scaricalo
           solo se l'assistenza te l'ha chiesto.</li>
+      <li><b>Il file che si installa, invece, resta attivo anche a finestra chiusa.</b>
+          <code>MTDesk-windows-x86_64-install.exe</code> mette sul computer il programma e un servizio di
+          Windows, <b>MTDesk Service</b>, che parte da solo a ogni accensione: il computer resta
+          raggiungibile anche dopo che hai chiuso la finestra. Per collegarsi serve comunque la password
+          che leggi nella finestra di MTDesk, o la tua conferma con <kbd>Accetta</kbd>, a meno che non
+          sia stata impostata una password permanente.
+          <br>Per vedere se il servizio è attivo: apri <b>Gestione attività</b> (tasti
+          <kbd>Ctrl</kbd> + <kbd>Maiusc</kbd> + <kbd>Esc</kbd>), vai alla voce <b>Servizi</b> e cerca la
+          riga <b>MTDesk</b>: se accanto c'è scritto <i>In esecuzione</i>, è attivo.
+          <br>Per toglierlo: <b>Impostazioni</b> di Windows → <b>App</b> → <b>App installate</b> (su
+          Windows 10 la voce si chiama <b>App e funzionalità</b>) → <b>MTDesk</b> → <b>Disinstalla</b>.
+          La disinstallazione toglie il programma e ferma e cancella il servizio. Sul disco restano le
+          cartelle <code>%LOCALAPPDATA%\MTDesk</code> e <code>%APPDATA%\MTDesk</code> descritte qui
+          sopra, che si cancellano allo stesso modo, e una copia delle impostazioni del servizio nella
+          cartella di sistema
+          <code>C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\MTDesk</code>, che si elimina
+          con i permessi di amministratore.</li>
       <li><b>Su Ubuntu, invece, il programma resta installato.</b> Il pacchetto <code>.deb</code> mette
           MTDesk fra le applicazioni e lo fa partire insieme al computer, così la volta dopo sei pronto
-          subito. Anche in quel caso nessuno si collega senza la password che leggi sullo schermo. Se non
-          ti serve più, lo togli con <code>sudo apt remove mtdesk</code>.</li>
-      <li><b>Vedi tutto quello che succede.</b> Non ci sono sessioni invisibili: il puntatore che si muove,
-          le finestre che si aprono, tutto avviene davanti ai tuoi occhi, e puoi fermare l'intervento in
-          qualsiasi momento chiudendo il programma.</li>
+          subito. Anche in quel caso nessuno si collega senza la password che leggi sullo schermo, a meno
+          che non sia stata impostata una password permanente. Se non ti serve più, lo togli con
+          <code>sudo apt purge mtdesk</code>, che cancella il programma, il suo servizio e le
+          impostazioni del servizio. Nella tua cartella personale restano le tue impostazioni, in
+          <code>~/.config/mtdesk</code>, e il registro degli eventi, in
+          <code>~/.local/share/logs/MTDesk</code>. Per cancellare anche quelli, incolla nel Terminale
+          questa riga:
+<pre><code>rm -r ~/.config/mtdesk ~/.local/share/logs/MTDesk</code></pre></li>
+      <li><b>La password permanente esiste, ma la decidi tu.</b> Se l'assistenza deve poter entrare più
+          volte senza telefonarti ogni volta, nel programma installato (su Windows con il file
+          "installa e resta", oppure su Ubuntu) si può impostare una <b>password permanente</b>.
+          Da quel momento chi conosce il tuo ID e quella password può collegarsi anche quando la finestra
+          di MTDesk è chiusa e senza che tu legga nessun codice, finché il computer è acceso e collegato
+          a internet (su Ubuntu con i limiti spiegati nel riquadro per Ubuntu). Non si attiva da sola:
+          va impostata sul tuo computer, da <b>Impostazioni</b> (i tre puntini accanto all'ID) →
+          <b>Sicurezza</b> → <b>Imposta password permanente</b>. La pagina <b>Sicurezza</b> si apre
+          bloccata: prima va premuto <kbd>Sblocca impostazioni sicurezza</kbd>, confermando la richiesta
+          che compare. Nello stesso punto la password permanente la togli quando vuoi, con il pulsante
+          <kbd>Rimuovi</kbd>; e se disinstalli MTDesk nessuno può più collegarsi.</li>
+      <li><b>Vedi quello che succede.</b> Durante l'assistenza segui sullo schermo il puntatore che si
+          muove e le finestre che si aprono, e una piccola finestra di MTDesk ti mostra chi è collegato.
+          Puoi fermare l'intervento in qualsiasi momento: premi <kbd>Disconnetti</kbd> in quella
+          finestra, oppure, con il file "assistenza adesso", chiudi il programma. Fa eccezione soltanto
+          l'accesso con la password permanente descritto qui sopra, che per sua natura può avvenire
+          anche quando non sei davanti al computer.</li>
     </ul>
 
     <p class="hint" style="margin-top:16px">
-      <b>Trasparenza (GDPR).</b> Quando il programma è in funzione, il server di Marketing Tools registra
-      l'identificativo del dispositivo (l'ID a 9 cifre) e l'indirizzo IP della connessione, per il tempo
-      necessario a mettere in comunicazione i due computer. Serve tecnicamente a far trovare le due macchine
-      su internet; il contenuto della sessione non viene raccolto.
+      <b>Trasparenza (GDPR).</b> Per far incontrare i due computer su internet, MTDesk si registra
+      presso il server di Marketing Tools. Il server registra l'ID del tuo computer, un codice che
+      identifica la macchina, la chiave pubblica che serve a proteggere il collegamento, l'ultimo
+      indirizzo IP con cui il computer si è presentato e la data della prima registrazione. Questi
+      dati non spariscono a fine assistenza: restano sul server, per poter ritrovare lo stesso
+      computer la volta successiva. Il contenuto della sessione (schermo, tastiera, file) non viene
+      raccolto.
+    </p>
+    <p class="hint">
+      Per quanto tempo quei dati restano sul server:
+      <span class="ph">[INSERIRE PERIODO DI CONSERVAZIONE DEI DATI SUL SERVER]</span><br>
+      Titolare del trattamento:
+      <span class="ph">[INSERIRE RAGIONE SOCIALE, SEDE E PARTITA IVA]</span><br>
+      Per chiedere la cancellazione dei tuoi dati e per ogni domanda sulla privacy:
+      <span class="ph">[INSERIRE CONTATTO PRIVACY]</span>
+    </p>
+    <p class="hint">
+      I pulsanti di questa pagina scaricano i file da GitHub, che come qualunque sito vede l'indirizzo
+      IP di chi scarica. Anche il programma, quando lo apri, contatta alcuni servizi esterni: per
+      esempio GitHub, per sapere se esiste una versione più recente. L'informativa completa (quali
+      dati, verso chi escono, per quanto tempo) è in questa pagina:
+      <a href="https://dario-97-it.github.io/mtdesk/privacy.html">Trattamento dei dati di MTDesk</a>.
     </p>
   </section>
 
@@ -565,6 +730,15 @@ sudo apt install ./mtdesk-ubuntu-amd64.deb</code></pre>
     <p>
       MTDesk è software libero basato su RustDesk, licenza AGPL-3.0.
       Codice sorgente: <a href="https://github.com/Dario-97-it/mtdesk">https://github.com/Dario-97-it/mtdesk</a>
+    </p>
+    <p>
+      MTDesk è un'opera derivata di RustDesk, modificata da Marketing Tools. Non è affiliato a RustDesk
+      e non è approvato né sostenuto dal progetto RustDesk o dai suoi autori: per qualsiasi problema
+      con MTDesk rivolgiti a noi, non al progetto RustDesk.
+    </p>
+    <p>
+      <a href="https://dario-97-it.github.io/mtdesk/privacy.html">Trattamento dei dati</a> ·
+      <a href="https://dario-97-it.github.io/mtdesk/aiuto.html">Aiuto e problemi più comuni</a>
     </p>
     <p>
       Marketing Tools · <a href="https://marketingtools.digital">marketingtools.digital</a>

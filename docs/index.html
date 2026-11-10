@@ -21,7 +21,7 @@ vedere il proprio schermo a un tecnico, o a prenderne il controllo per dare assi
 senza account, senza limiti di tempo, su server propri.</p>
 
 <ul class="indice">
-  <li><a href="aiuto.html">Aiuto e problemi<small>Schermo nero su Ubuntu, Wayland, permessi, schermata di accesso</small></a></li>
+  <li><a href="aiuto.html">Aiuto e problemi<small>Ubuntu e Wayland, tastiera, avvisi di Windows, aggiornamento, come togliere il programma</small></a></li>
   <li><a href="privacy.html">Trattamento dei dati<small>Quali dati tratta il programma e verso chi escono</small></a></li>
   <li><a href="https://github.com/Dario-97-it/mtdesk/releases/latest">Scarica<small>Windows e Ubuntu, ultima versione</small></a></li>
   <li><a href="https://github.com/Dario-97-it/mtdesk">Codice sorgente<small>Repository pubblico, licenza AGPL-3.0</small></a></li>
@@ -42,18 +42,45 @@ parte.</p>
 <p>Per l'assistenza ricorrente, sul PC del cliente si può impostare una <strong>password di accesso
 permanente</strong> (Impostazioni → Sicurezza): il cliente la comunica una sola volta e il tecnico
 può entrare quando serve.</p>
+<!-- NOTA TEMPORANEA: togliere questo riquadro quando il centralino entra in servizio. -->
+<div class="nota attenzione"><strong>Stato attuale.</strong> Il centralino che fa incontrare i due
+computer non è ancora in funzione: finché non viene attivato, i collegamenti descritti qui sopra
+non si stabiliscono. I dettagli sono nella pagina di aiuto, alla voce
+<a href="aiuto.html#centralino">Il centralino</a>.</div>
 </div>
 
 <h2>Sistemi supportati</h2>
 <div class="card">
 <table>
-  <tr><th>Windows 10 e 11 (64 bit)</th><td>Versione completa che si installa, e versione per
-  assistenza veloce che non installa nulla.</td></tr>
-  <tr><th>Ubuntu e Debian (64 bit)</th><td>Pacchetto <code>.deb</code>. Su Ubuntu 22.04 e successivi
-  leggi la sezione <a href="aiuto.html#x11-richiesto">Serve X11, non Wayland</a>: è il problema più
-  frequente.</td></tr>
+  <tr><th>Windows 10 e 11 (64 bit)</th><td>Due file:
+  <code>MTDesk-windows-x86_64-install.exe</code>, la versione completa che si installa e resta sul
+  computer, e <code>MTDesk-qs.exe</code>, l'assistenza rapida che si apre senza installarsi. Al
+  primo avvio Windows mostra alcuni avvisi: sono spiegati in
+  <a href="aiuto.html#windows-avvisi">Avvisi di Windows</a>.</td></tr>
+  <tr><th>Ubuntu e Debian (64 bit)</th><td>Pacchetto <code>.deb</code>. Ubuntu usa il sistema
+  grafico Wayland, con cui MTDesk lavora ancora in via sperimentale: prima di contarci leggi la
+  sezione <a href="aiuto.html#x11-richiesto">Serve X11, non Wayland</a>, che dice cosa fare secondo
+  la versione (da Ubuntu 25.10 in poi X11 non c'è più). È il problema più frequente.</td></tr>
   <tr><th>macOS</th><td>Non supportato. Il programma non viene compilato per macOS.</td></tr>
+  <tr><th>Android (telefoni e tablet)</th><td>Non supportato: MTDesk non esiste per Android, né per
+  farsi assistere né per dare assistenza. <em>In pratica: «Dal telefono o dal tablet non si può
+  fare: serve un computer con Windows o Ubuntu».</em></td></tr>
+  <tr><th>iPhone e iPad</th><td>Non supportato, allo stesso modo: né per farsi assistere né per
+  dare assistenza. <em>In pratica: «Con iPhone e iPad non si può fare: serve un computer con
+  Windows o Ubuntu».</em></td></tr>
+  <tr><th>Windows su processore ARM, Windows a 32 bit</th><td>Non c'è una versione dedicata. I file
+  per Windows sono fatti per i processori Intel e AMD a 64 bit: su Windows a 32 bit non partono, e
+  sui computer Windows con processore ARM (alcuni portatili recenti) non sono stati provati.
+  <em>In pratica: «Per questo computer non abbiamo una versione: se ne hai un altro con Windows o
+  Ubuntu, usiamo quello».</em></td></tr>
+  <tr><th>Linux su processore ARM (per esempio Raspberry Pi)</th><td>Non supportato: il pacchetto
+  <code>.deb</code> è fatto solo per i processori Intel e AMD a 64 bit e su questi computer non si
+  installa. <em>In pratica: «Su questo computer MTDesk non si può installare: serve un PC con
+  processore Intel o AMD».</em></td></tr>
 </table>
+<p>Se il tuo dispositivo è fra quelli non supportati, non scaricare i file: non sono fatti per
+quel dispositivo. Chiedi all'assistenza come procedere: a chi rivolgersi è scritto in fondo alla
+pagina di aiuto, alla voce <a href="aiuto.html#segnalare">Il problema non è in questo elenco</a>.</p>
 </div>
 
 <h2>Il file degli aggiornamenti</h2>
@@ -61,12 +88,13 @@ può entrare quando serve.</p>
 <p>MTDesk, all'avvio, legge <a href="version.json"><code>version.json</code></a> da questa stessa
 cartella per sapere se esiste una versione più recente, e in caso mostra un avviso. Non scarica e
 non installa niente da solo, e non invia nessun dato: i dettagli sono nella pagina
-<a href="privacy.html">Trattamento dei dati</a>.</p>
+<a href="privacy.html">Trattamento dei dati</a>. Cosa fare quando l'avviso compare è scritto in
+<a href="aiuto.html#aggiornamento">Avviso di aggiornamento</a>.</p>
 </div>
 
 <footer>
   <p><a href="aiuto.html">Aiuto</a> · <a href="privacy.html">Trattamento dei dati</a> ·
-  <a href="https://github.com/Dario-97-it/mtdesk/issues">Segnala un problema</a></p>
+  <a href="aiuto.html#segnalare">Segnala un problema</a></p>
   <p><strong>Marketing Tools</strong> · MTDesk · licenza AGPL-3.0 · opera derivata non affiliata al
   progetto di origine</p>
 </footer>
