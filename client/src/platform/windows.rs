@@ -2390,19 +2390,44 @@ pub fn check_super_user_permission() -> ResultType<bool> {
     )
 }
 
+// =====================================================================
+//  MTDesk: VERSIONE PORTABLE E PRIVILEGI DI AMMINISTRATORE
+// ---------------------------------------------------------------------
+//  La versione portable dice al programma dove tenere i propri dati con la
+//  variabile d'ambiente MTDESK_DATA_DIR. Ma quando si chiedono i privilegi
+//  di amministratore, il processo nuovo NON lo avvia questo programma: lo
+//  avvia Windows (il servizio AppInfo per l'UAC, oppure il servizio di
+//  sistema per --run-as-system), e gli costruisce un ambiente pulito. Le
+//  nostre variabili non arrivano.
+//
+//  Senza questa riga, la copia con i privilegi non saprebbe di essere
+//  portable e scriverebbe la propria configurazione in %APPDATA%\MTDesk:
+//  sul computer del cliente resterebbe una cartella che la versione
+//  portable, per definizione, non deve lasciare.
+//
+//  Gli argomenti invece sopravvivono: si passa quindi la cartella con
+//  --data-dir, che core_main legge come prima cosa.
+// =====================================================================
+fn con_cartella_dati(arg: &str) -> String {
+    match hbb_common::config::portable_data_dir() {
+        None => arg.to_owned(),
+        Some(dir) => format!("{} --data-dir \"{}\"", arg, dir.display()),
+    }
+}
+
 pub fn elevate(arg: &str) -> ResultType<bool> {
     run_uac(
         std::env::current_exe()?
             .to_string_lossy()
             .to_string()
             .as_str(),
-        arg,
+        &con_cartella_dati(arg),
     )
 }
 
 pub fn run_as_system(arg: &str) -> ResultType<()> {
     let exe = std::env::current_exe()?.to_string_lossy().to_string();
-    if impersonate_system::run_as_system(&exe, arg).is_err() {
+    if impersonate_system::run_as_system(&exe, &con_cartella_dati(arg)).is_err() {
         bail!(format!("Failed to run {} as system", exe));
     }
     Ok(())

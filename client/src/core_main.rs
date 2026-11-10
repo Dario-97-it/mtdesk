@@ -22,6 +22,28 @@ macro_rules! my_println{
     };
 }
 
+/// MTDesk: rimette la cartella dati della versione portable quando arriva
+/// come argomento invece che come variabile d'ambiente (succede dopo una
+/// richiesta di privilegi di amministratore: vedi con_cartella_dati() in
+/// src/platform/windows.rs).
+#[cfg(windows)]
+fn rileggi_cartella_dati_dagli_argomenti() {
+    if std::env::var_os(config::PORTABLE_DATA_DIR_ENV_KEY).is_some() {
+        return;
+    }
+    let mut args = std::env::args();
+    while let Some(arg) = args.next() {
+        if arg == "--data-dir" {
+            if let Some(percorso) = args.next() {
+                if !percorso.is_empty() {
+                    std::env::set_var(config::PORTABLE_DATA_DIR_ENV_KEY, percorso);
+                }
+            }
+            return;
+        }
+    }
+}
+
 /// shared by flutter and sciter main function
 ///
 /// [Note]
@@ -29,6 +51,14 @@ macro_rules! my_println{
 /// If it returns [`Some`], then the process will continue, and flutter gui will be started.
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub fn core_main() -> Option<Vec<String>> {
+    // MTDesk: PRIMA DI TUTTO, perche' la cartella di configurazione viene
+    // decisa alla prima lettura e poi non cambia piu'. Vedi
+    // con_cartella_dati() in src/platform/windows.rs: quando la versione
+    // portable chiede i privilegi di amministratore, Windows avvia il
+    // processo nuovo con un ambiente pulito e la variabile MTDESK_DATA_DIR
+    // va persa; l'argomento --data-dir invece arriva, e qui la rimettiamo.
+    #[cfg(windows)]
+    rileggi_cartella_dati_dagli_argomenti();
     if !crate::common::global_init() {
         return None;
     }
@@ -47,9 +77,17 @@ pub fn core_main() -> Option<Vec<String>> {
     let mut _is_flutter_invoke_new_connection = false;
     let mut no_server = false;
     let mut arg_exe = Default::default();
+    // MTDesk: --data-dir e il percorso che lo segue sono gia' stati letti
+    // sopra; vanno tolti dall'elenco, altrimenti il programma si crede
+    // avviato con dei comandi e non apre la finestra.
+    let mut _salta_percorso_dati = false;
     for arg in std::env::args() {
         if i == 0 {
             arg_exe = arg;
+        } else if _salta_percorso_dati {
+            _salta_percorso_dati = false;
+        } else if arg == "--data-dir" {
+            _salta_percorso_dati = true;
         } else if i > 0 {
             #[cfg(feature = "flutter")]
             if [
@@ -118,6 +156,19 @@ pub fn core_main() -> Option<Vec<String>> {
     #[cfg(feature = "flutter")]
     if _is_flutter_invoke_new_connection {
         return core_main_invoke_new_connection(std::env::args());
+    }
+    // MTDesk: VERSIONE PORTABLE (MTDesk-portable.exe). Il pacchetto ha passato
+    // la cartella dati accanto all'eseguibile (vedi
+    // hbb_common::config::PORTABLE_DATA_DIR_ENV_KEY). E' il programma
+    // completo, ma non deve proporre ne' permettere l'installazione: ID e
+    // configurazione finirebbero divisi tra la chiavetta e il PC. Va fatto
+    // PRIMA di is_setup() qui sotto, che legge proprio questa impostazione.
+    if config::portable_data_dir().is_some() {
+        config::HARD_SETTINGS
+            .write()
+            .unwrap()
+            .entry("disable-installation".to_owned())
+            .or_insert_with(|| "Y".to_owned());
     }
     let click_setup = cfg!(windows) && args.is_empty() && crate::common::is_setup(&arg_exe);
     if click_setup && !config::is_disable_installation() {

@@ -4,7 +4,13 @@
 # --------------------------------------------------------------------------
 #  Va installato su una macchina con IP PUBBLICO (VPS o server con
 #  port-forwarding). Imposta MTDESK_HOST nel file .env con il tuo dominio o
-#  IP pubblico, poi:   docker compose up -d --build
+#  IP pubblico, poi:   docker compose up -d
+#
+#  SUL VPS NON SI COMPILA: l'immagine si costruisce sul proprio computer, si
+#  esporta, si copia sul VPS e li' si carica gia' pronta (i comandi sono in
+#  README-SERVER.md, paragrafo 2). Quindi niente "--build" e niente
+#  "docker compose pull": l'immagine non sta su nessun registro pubblico.
+#  "--build" serve solo a chi costruisce, cioe' sul PC di sviluppo.
 #
 #  COSA E' CAMBIATO (nov 2026) E PERCHE' CONTA
 #  Prima qui c'era "image: rustdesk/rustdesk-server:latest", cioe' un binario

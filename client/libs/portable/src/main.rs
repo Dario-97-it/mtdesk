@@ -28,6 +28,17 @@ const APP_PREFIX: &str = "MTDesk";
 // se le due stringhe non combaciano, il programma non legge il nome e la
 // modalita' Quick Support non si attiva piu'.
 const APPNAME_RUNTIME_ENV_KEY: &str = "MTDESK_APPNAME";
+// MTDesk: VERSIONE PORTABLE. Se il pacchetto si chiama "...-portable.exe" (o
+// "..._portable..."), il programma tiene configurazione, rubrica e log in una
+// cartella "MTDesk-dati" accanto all'eseguibile invece che in %APPDATA%\MTDesk:
+// copiando o spostando la cartella ci si porta dietro anche l'ID. I file del
+// programma vengono comunque scompattati in %LOCALAPPDATA%\MTDesk come per
+// gli altri due pacchetti (sono solo una copia di lavoro, senza dati).
+// DEVE restare identica a PORTABLE_DATA_DIR_ENV_KEY in
+// libs/hbb_common/src/config.rs.
+const DATA_DIR_ENV_KEY: &str = "MTDESK_DATA_DIR";
+const PORTABLE_DATA_DIR_NAME: &str = "MTDesk-dati";
+const PORTABLE_WRITE_PROBE: &str = ".prova-scrittura";
 #[cfg(windows)]
 const SET_FOREGROUND_WINDOW_ENV_KEY: &str = "SET_FOREGROUND_WINDOW";
 
@@ -141,7 +152,41 @@ fn is_windows_7() -> bool {
     false
 }
 
-fn execute(path: PathBuf, args: Vec<String>, _ui: bool) {
+/// Il nome del file decide la modalita' (vedi anche is_quick_support_exe e il
+/// controllo "install.exe" in main()): questo e' il terzo caso.
+fn is_portable_exe(exe: &str) -> bool {
+    let exe = exe.to_lowercase();
+    exe.contains("-portable") || exe.contains("_portable")
+}
+
+/// Cartella dati della versione portable: <cartella dell'eseguibile>\MTDesk-dati.
+/// Restituisce None (= comportamento normale, dati in %APPDATA%) se il
+/// pacchetto non si chiama "portable", oppure se la cartella non si puo'
+/// creare o scrivere, per esempio perche' l'eseguibile sta su un supporto in
+/// sola lettura o in una cartella protetta.
+fn portable_data_dir(arg_exe: &str) -> Option<PathBuf> {
+    if !is_portable_exe(arg_exe) {
+        return None;
+    }
+    // current_exe() e' sempre un percorso assoluto, anche se il pacchetto e'
+    // stato avviato con un nome relativo: il programma accetta solo percorsi
+    // assoluti.
+    let exe = std::env::current_exe().ok()?;
+    let dir = exe.parent()?.join(PORTABLE_DATA_DIR_NAME);
+    if let Err(e) = std::fs::create_dir_all(&dir) {
+        eprintln!("cartella dati portable non creabile {}: {}", dir.display(), e);
+        return None;
+    }
+    let probe = dir.join(PORTABLE_WRITE_PROBE);
+    if let Err(e) = std::fs::write(&probe, b"") {
+        eprintln!("cartella dati portable non scrivibile {}: {}", dir.display(), e);
+        return None;
+    }
+    let _ = std::fs::remove_file(&probe);
+    Some(dir)
+}
+
+fn execute(path: PathBuf, args: Vec<String>, _ui: bool, data_dir: Option<PathBuf>) {
     println!("executing {}", path.display());
     // setup env
     let exe = std::env::current_exe().unwrap_or_default();
@@ -159,6 +204,10 @@ fn execute(path: PathBuf, args: Vec<String>, _ui: bool) {
     }
 
     cmd.env(APPNAME_RUNTIME_ENV_KEY, exe_name);
+    if let Some(dir) = data_dir {
+        println!("cartella dati portable: {}", dir.display());
+        cmd.env(DATA_DIR_ENV_KEY, dir);
+    }
     if use_null_stdio() {
         cmd.stdin(Stdio::null())
             .stdout(Stdio::null())
@@ -195,9 +244,14 @@ fn main() {
         }
         i += 1;
     }
-    let click_setup = args.is_empty() && arg_exe.to_lowercase().ends_with("install.exe");
+    // MTDesk: il nome "portable" ha la precedenza sugli altri due: un pacchetto
+    // portable non installa e non e' assistenza rapida.
+    let data_dir = portable_data_dir(&arg_exe);
+    let portable = is_portable_exe(&arg_exe);
+    let click_setup =
+        args.is_empty() && !portable && arg_exe.to_lowercase().ends_with("install.exe");
     #[cfg(windows)]
-    let quick_support = args.is_empty() && win::is_quick_support_exe(&arg_exe);
+    let quick_support = args.is_empty() && !portable && win::is_quick_support_exe(&arg_exe);
     #[cfg(not(windows))]
     let quick_support = false;
 
@@ -215,7 +269,7 @@ fn main() {
         } else if quick_support {
             args = vec!["--quick_support".to_owned()];
         }
-        execute(exe, args, ui);
+        execute(exe, args, ui, data_dir);
     }
 }
 

@@ -92,6 +92,41 @@ lazy_static::lazy_static! {
     pub static ref APP_DIR: RwLock<String> = Default::default();
 }
 
+// MTDesk: VERSIONE PORTABLE.
+// Normalmente la configurazione vive nella cartella di sistema dell'utente
+// (%APPDATA%\MTDesk\config su Windows, ~/.config/MTDesk su Linux). Se il
+// programma viene avviato dal pacchetto portable (MTDesk-portable.exe), il
+// pacchetto gli passa in questa variabile d'ambiente la cartella "MTDesk-dati"
+// che sta accanto all'eseguibile: ID, password, rubrica, sessioni recenti e
+// log finiscono li' dentro e viaggiano insieme alla chiavetta.
+// I processi figli (--server, --cm, --tray) ereditano la variabile, quindi
+// leggono tutti la stessa cartella.
+// DEVE restare identica a DATA_DIR_ENV_KEY in libs/portable/src/main.rs.
+pub const PORTABLE_DATA_DIR_ENV_KEY: &str = "MTDESK_DATA_DIR";
+
+lazy_static::lazy_static! {
+    static ref PORTABLE_DATA_DIR: Option<PathBuf> = leggi_cartella_dati_portable();
+}
+
+fn leggi_cartella_dati_portable() -> Option<PathBuf> {
+    let valore = std::env::var_os(PORTABLE_DATA_DIR_ENV_KEY)?;
+    let percorso = PathBuf::from(valore);
+    // Solo percorsi assoluti: uno relativo cambierebbe significato in ogni
+    // processo figlio a seconda della cartella di lavoro, e ciascuno
+    // leggerebbe una configurazione diversa.
+    if percorso.as_os_str().is_empty() || !percorso.is_absolute() {
+        return None;
+    }
+    Some(percorso)
+}
+
+/// Cartella dati della versione portable, se il programma e' stato avviato
+/// cosi'. `None` nell'uso normale (installato, o avviato senza installare).
+#[inline]
+pub fn portable_data_dir() -> Option<&'static Path> {
+    PORTABLE_DATA_DIR.as_deref()
+}
+
 #[cfg(any(target_os = "android", target_os = "ios"))]
 lazy_static::lazy_static! {
     pub static ref APP_HOME_DIR: RwLock<String> = Default::default();
@@ -787,6 +822,14 @@ impl Config {
         }
         #[cfg(not(any(target_os = "android", target_os = "ios")))]
         {
+            // MTDesk: versione portable, vedi PORTABLE_DATA_DIR_ENV_KEY.
+            // Struttura identica a quella normale (<base>\config, <base>\log),
+            // cosi' log_path() qui sotto funziona senza casi speciali.
+            if let Some(base) = portable_data_dir() {
+                let mut path = base.join("config");
+                path.push(p);
+                return path;
+            }
             #[cfg(not(target_os = "macos"))]
             let org = "".to_owned();
             #[cfg(target_os = "macos")]
@@ -811,6 +854,12 @@ impl Config {
     /// See [`Self::get_home()`] for security considerations regarding `$HOME` usage.
     #[allow(unreachable_code)]
     pub fn log_path() -> PathBuf {
+        // MTDesk: versione portable, i log stanno accanto alla configurazione.
+        if let Some(base) = portable_data_dir() {
+            let path = base.join("log");
+            std::fs::create_dir_all(&path).ok();
+            return path;
+        }
         #[cfg(target_os = "macos")]
         {
             if let Some(path) = dirs_next::home_dir().as_mut() {
@@ -846,9 +895,18 @@ impl Config {
             // \\ServerName\pipe\PipeName
             // where ServerName is either the name of a remote computer or a period, to specify the local computer.
             // https://docs.microsoft.com/en-us/windows/win32/ipc/pipe-names
+            // MTDesk: la versione portable usa una pipe con un altro nome.
+            // Altrimenti, su un PC dove MTDesk e' anche installato, il
+            // portable si attaccherebbe al servizio installato e mostrerebbe
+            // l'ID di quello invece del proprio.
             format!(
-                "\\\\.\\pipe\\{}\\query{}",
+                "\\\\.\\pipe\\{}{}\\query{}",
                 *APP_NAME.read().unwrap(),
+                if portable_data_dir().is_some() {
+                    "-portable"
+                } else {
+                    ""
+                },
                 postfix
             )
         }

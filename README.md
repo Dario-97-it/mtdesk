@@ -48,14 +48,18 @@ vedi il riquadro qui sopra.)
 |---|---|---|
 | **Windows** 10/11 (64 bit) | [`MTDesk-windows-x86_64-install.exe`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-windows-x86_64-install.exe) | Versione completa: al doppio clic propone l'installazione; una volta installata resta sul PC e si avvia da sola all'accensione. È quella per l'assistenza che si ripete nel tempo, ed è quella che usa il tecnico quando lavora da Windows. |
 | **Windows** — assistenza veloce | [`MTDesk-qs.exe`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-qs.exe) | "Quick Support": si apre e basta, **non installa niente**. Ideale per il cliente che ha bisogno di aiuto una volta sola. Serve solo a *ricevere* assistenza. |
+| **Windows** — portable | [`MTDesk-portable.exe`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/MTDesk-portable.exe) | Il programma completo, ma con **tutti i suoi dati in una cartella `MTDesk-dati` accanto al file**: ID, password, rubrica, impostazioni e registri. Si porta su una chiavetta e si usa su qualunque PC Windows senza installare niente e senza toccare la configurazione di quel computer. Non propone l'installazione. |
 | **Ubuntu / Debian** (64 bit) | [`mtdesk-ubuntu-amd64.deb`](https://github.com/Dario-97-it/mtdesk/releases/latest/download/mtdesk-ubuntu-amd64.deb) | Si installa da terminale: `sudo apt install ./mtdesk-ubuntu-amd64.deb`. Per Linux c'è solo questo pacchetto, da installare: una versione "apri e usa" come quella per Windows non esiste. Se sul PC c'è già RustDesk, l'installazione lo toglie: i due programmi non possono convivere. |
 
-**I due file per Windows sono lo stesso programma con due nomi diversi**, ed è il nome a
-decidere come si comporta: un nome che finisce in `install.exe` fa comparire la schermata di
-installazione, un nome che contiene `-qs.exe` apre l'assistenza rapida. Per questo **non
-vanno rinominati**: con un altro nome il programma si comporterebbe in un altro modo.
+**I tre file per Windows sono lo stesso programma con tre nomi diversi** (stessa impronta
+SHA-256), ed è il nome a decidere come si comporta: un nome che finisce in `install.exe` fa
+comparire la schermata di installazione, un nome che contiene `-qs.exe` apre l'assistenza
+rapida, un nome che contiene `-portable` tiene i dati accanto all'eseguibile. Per questo
+**non vanno rinominati**: con un altro nome il programma si comporterebbe in un altro modo.
 
-Che cosa fa, di preciso, `MTDesk-qs.exe`:
+### `MTDesk-qs.exe` — assistenza una tantum
+
+Che cosa fa, di preciso:
 
 - apre una **finestra compatta** con il logo, l'ID, la password monouso, lo stato del
   collegamento e il pulsante **Esci**. Chi lo apre può solo farsi assistere: i collegamenti
@@ -69,8 +73,40 @@ Che cosa fa, di preciso, `MTDesk-qs.exe`:
 - per funzionare **scompatta i propri file**, circa 72 MB, nella cartella
   `%LOCALAPPDATA%\MTDesk` del profilo utente, e **quando viene chiuso non li cancella**. Non
   è un'installazione, ma è giusto saperlo: chi vuole togliere ogni traccia cancella, a
-  programma chiuso, sia il file scaricato sia quella cartella. (Nella stessa cartella si
-  scompatta anche l'altro file, prima di mostrare la schermata di installazione.)
+  programma chiuso, sia il file scaricato sia quella cartella. (Nella stessa cartella si
+  scompattano anche gli altri due file, prima di fare quello che il loro nome dice.)
+
+### `MTDesk-portable.exe` — su chiavetta, senza lasciare tracce
+
+È il programma **completo** (si collega ad altri PC e riceve collegamenti), ma non usa le
+cartelle di sistema: tutto quello che scrive finisce in una cartella **`MTDesk-dati`** creata
+accanto all'eseguibile, con dentro `config\` (ID, chiavi, password permanente, rubrica,
+impostazioni) e `log\`. Spostando o copiando quella cartella si sposta anche l'identità del
+programma.
+
+Serve per il tecnico che gira con una chiavetta, e per chi non vuole installare niente su un
+PC che non è suo. In particolare:
+
+- **non propone e non permette l'installazione**: la scheda «Installa MTDesk» non compare;
+- **non legge e non scrive** la configurazione di un MTDesk installato sullo stesso computer:
+  usa un canale di comunicazione interno con un nome diverso (`\\.\pipe\MTDesk-portable\...`),
+  quindi i due non si disturbano;
+- se viene chiesto il **permesso di amministratore**, la copia con i privilegi riceve la
+  cartella dati come argomento (`--data-dir`): Windows, infatti, avvia i processi elevati con
+  un ambiente pulito, e senza quell'argomento scriverebbe in `%APPDATA%` del PC ospite;
+- se la cartella non si può creare o scrivere (chiavetta in sola lettura, cartella protetta),
+  il programma **non si blocca**: torna a comportarsi come la versione normale e scrive in
+  `%APPDATA%\MTDesk`.
+
+Due cose da sapere:
+
+- come gli altri due file, per funzionare **scompatta i propri file** (circa 72 MB) in
+  `%LOCALAPPDATA%\MTDesk` sul PC ospite e non li cancella da solo. Sono file di programma,
+  senza dati: la cartella si può cancellare a mano quando si ha finito;
+- l'**ID è ricavato dall'indirizzo MAC della scheda di rete** del computer su cui gira. Sullo
+  stesso PC, quindi, la copia portable e quella installata hanno lo *stesso* ID e si
+  sovrascrivono a vicenda la registrazione sul centralino (ognuna si ri-registra quando
+  parte). Su PC diversi, come nell'uso vero con la chiavetta, il problema non si pone.
 
 > **macOS non è supportato.** Il progetto viene compilato e collaudato solo per Windows e Ubuntu.
 
@@ -339,7 +375,8 @@ Il workflow è fatto di quattro lavori:
    finestre e i bottoni, scritti in Dart, e la parte che cattura lo schermo e parla in rete,
    scritta in Rust);
 3. **Ubuntu** — compila `mtdesk-ubuntu-amd64.deb`;
-4. **Windows** — compila `MTDesk-windows-x86_64-install.exe` e `MTDesk-qs.exe`.
+4. **Windows** — compila `MTDesk-windows-x86_64-install.exe`, `MTDesk-qs.exe` e
+   `MTDesk-portable.exe`.
 
 I lavori 3 e 4 calcolano l'impronta SHA-256 di ogni file e allegano tutto alla Release: tre
 file più i loro tre `.sha256`. Sono indipendenti l'uno dall'altro: se uno dei due fallisce,
@@ -373,8 +410,10 @@ Per compilare sul proprio PC:
   Attenzione: le versioni di Rust (1.75.0), Flutter (3.24.5), LLVM (15.0.6) e il commit di
   vcpkg indicati in quella guida sono **vincoli di compatibilità**, non suggerimenti: con
   versioni più recenti la build non passa.
-  Alla fine `client/build.py` lascia nella cartella `client/` i due file da distribuire,
-  `MTDesk-windows-x86_64-install.exe` e `MTDesk-qs.exe`, già con i nomi giusti.
+  Alla fine `client/build.py` lascia nella cartella `client/` i tre file da distribuire,
+  `MTDesk-windows-x86_64-install.exe`, `MTDesk-qs.exe` e `MTDesk-portable.exe`, già con i
+  nomi giusti (è lo stesso binario copiato tre volte: è il nome a cambiarne il
+  comportamento).
 - **Ubuntu** → **[`BUILD-UBUNTU.md`](BUILD-UBUNTU.md)**
   Produce il pacchetto `.deb` installabile con `apt`. Gli stessi comandi, già pronti, sono
   quelli eseguiti dal workflow citato sopra.

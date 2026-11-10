@@ -141,8 +141,9 @@ tempo, quindi non fidarti dei numeri che trovi nelle guide vecchie):
    `Out of host capacity` e possono volerci settimane di tentativi per averla.
 2. Il nostro centralino consuma **quasi niente**: due processi che smistano pacchetti.
    1 GB di RAM e' abbondante, non e' un compromesso.
-3. L'AMD e' **x86_64**, la stessa architettura del tuo PC: l'immagine Docker
-   `rustdesk/rustdesk-server` su x86_64 e' quella piu' usata e collaudata al mondo.
+3. L'AMD e' **x86_64**, la stessa architettura del tuo PC: l'immagine del centralino la
+   costruisci tu sul tuo computer (o sul PC Ubuntu) e la copi sul VPS gia' pronta. Se il VPS
+   fosse ARM, quell'immagine non ci girerebbe e andrebbe ricostruita per ARM.
 4. Del piano gratuito hai **due** macchine AMD Micro: se un giorno rompi questa, ne accendi
    un'altra senza pagare.
 
@@ -976,25 +977,28 @@ Non ti puoi chiudere fuori con `iptables-restore`: la regola della porta 22 e' d
 di backup. **Puoi** chiuderti fuori con `ufw enable`: vedi il punto 5.6.
 
 ### 13.4 Se un aggiornamento dell'immagine rompe tutto
-Il nostro `docker-compose.yml` usa `rustdesk/rustdesk-server:latest`, cioe' "l'ultima versione".
-Comodo, ma significa che un `docker compose pull` puo' portarti una versione nuova che si
-comporta diversamente.
+Il `docker-compose.yml` usa `image: mtdesk-server:1.1.17`, cioe' **la nostra** immagine,
+costruita dai sorgenti della cartella `server/`. Non sta su nessun registro pubblico: nessuno
+puo' cambiartela sotto i piedi e `docker compose pull` non ha niente da scaricare. Un
+aggiornamento avviene solo quando sei tu a costruire e a copiare un'immagine nuova.
 
-**Prima** di aggiornare, prenditi il "numero di serie" della versione che funziona:
+Proprio per questo il modo di tornare indietro e' tenersi quella vecchia. **Prima** di
+caricare la nuova, dai un secondo nome a quella che funziona:
 
 ```bash
-docker image ls --digests | grep rustdesk-server
+docker tag mtdesk-server:1.1.17 mtdesk-server:precedente
 ```
 
-Copia la stringa che inizia con `sha256:` e mettila da parte (incollala anche in un tuo appunto
-sul PC). Se dopo l'aggiornamento qualcosa non va, torni indietro sostituendo nel
-`docker-compose.yml` le **due** righe `image:` con:
+Poi carichi la nuova (`docker load -i ...`) e riavvii. Se qualcosa non va, torni indietro in
+due comandi:
 
-```yaml
-    image: rustdesk/rustdesk-server@sha256:LA-STRINGA-CHE-HAI-SALVATO
+```bash
+docker tag mtdesk-server:precedente mtdesk-server:1.1.17
+docker compose up -d --force-recreate
 ```
 
-e poi `docker compose up -d --force-recreate`.
+I comandi completi per costruire, esportare, copiare e caricare l'immagine sono in
+[`deploy/README-SERVER.md`](deploy/README-SERVER.md), paragrafo 2.
 
 ### 13.5 Ritirata totale: rifare la macchina da zero
 Se ti sei incartato al punto di non capire piu' cosa hai toccato, **non e' un dramma**: la

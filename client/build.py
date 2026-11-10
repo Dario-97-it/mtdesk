@@ -981,8 +981,12 @@ def build_flutter_windows(version, features, skip_portable_pack):
     #     si apre e gira, e l'utente deve premere Installa a mano.
     #   - un nome che CONTIENE "-qs.exe", "_qs.exe" o "-qs-" avvia la
     #     modalita' Quick Support (src/core_main.rs, is_quick_support_exe()).
+    #   - un nome che CONTIENE "-portable" o "_portable" e' la versione
+    #     PORTABLE: configurazione, rubrica e log in una cartella
+    #     "MTDesk-dati" accanto all'eseguibile, niente installazione
+    #     (libs/portable/src/main.rs, is_portable_exe(); src/core_main.rs).
     #
-    #  I due file sono quindi LO STESSO BINARIO con due nomi diversi, e i
+    #  I tre file sono quindi LO STESSO BINARIO con tre nomi diversi, e i
     #  nomi sono stabili (senza numero di versione) perche' i link
     #  /releases/latest/download/... non si rompano a ogni rilascio.
     # ==================================================================
@@ -990,13 +994,16 @@ def build_flutter_windows(version, features, skip_portable_pack):
         f'output location: {os.path.abspath(os.curdir)}/rustdesk_portable.exe')
     installer = './MTDesk-windows-x86_64-install.exe'
     quick_support = './MTDesk-qs.exe'
-    for vecchio in (installer, quick_support):
+    portable = './MTDesk-portable.exe'
+    for vecchio in (installer, quick_support, portable):
         if os.path.exists(vecchio):
             os.remove(vecchio)
     os.rename('./rustdesk_portable.exe', installer)
     shutil.copy2(installer, quick_support)
+    shutil.copy2(installer, portable)
     print(f'output location: {os.path.abspath(os.curdir)}/{installer[2:]}   (installa)')
     print(f'output location: {os.path.abspath(os.curdir)}/{quick_support[2:]}   (assistenza veloce, non installa)')
+    print(f'output location: {os.path.abspath(os.curdir)}/{portable[2:]}   (portable: dati in MTDesk-dati accanto a MTDesk-portable.exe)')
 
 
 def main():

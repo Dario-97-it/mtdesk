@@ -2431,23 +2431,52 @@ async fn stun_ipv4_test(stun_server: &str) -> ResultType<(SocketAddr, String)> {
     })
 }
 
-static STUNS_V4: [&str; 3] = [
-    "stun.l.google.com:19302",
-    "stun.cloudflare.com:3478",
-    "stun.nextcloud.com:3478",
-];
-
-static STUNS_V6: [&str; 3] = [
-    "stun.l.google.com:19302",
-    "stun.cloudflare.com:3478",
-    "stun.nextcloud.com:3478",
-];
+// =====================================================================
+//  MTDesk: SERVER STUN DI TERZI - DISATTIVATI
+// ---------------------------------------------------------------------
+//  Qui c'erano tre indirizzi fissi: stun.l.google.com, stun.cloudflare.com
+//  e stun.nextcloud.com. Il programma li interrogava A OGNI AVVIO (la catena
+//  e' test_nat_type -> test_ipv6_sync -> test_ipv6) per farsi dire il proprio
+//  indirizzo IPv6 pubblico, e una quarta volta in test_udp_uat per l'IPv4.
+//  Era visibile nei log: "Found public IPv6 address via STUN server
+//  stun.l.google.com:19302".
+//
+//  Non va bene per noi, per due motivi:
+//   - e' una dipendenza da servizi di altri che non abbiamo scelto e che
+//     possono sparire o cambiare condizioni da un giorno all'altro;
+//   - sul PC di un cliente in assistenza, tre societa' estranee vedrebbero
+//     arrivare una richiesta dal suo indirizzo. Non contiene ne' l'ID ne'
+//     altri dati, ma e' traffico verso terzi che il cliente non si aspetta.
+//
+//  Ora l'elenco e' VUOTO: nessuna richiesta parte. Chi volesse riattivarlo
+//  (per esempio puntando a un proprio server STUN) puo' scrivere l'opzione
+//  "stun-servers" nella configurazione, con gli indirizzi separati da virgola:
+//      stun-servers = 'stun.esempio.it:3478,altro.esempio.it:3478'
+//
+//  Che cosa si perde con l'elenco vuoto: la scoperta dell'IPv6 pubblico
+//  tramite STUN. Resta quella locale (test_bind_ipv6 qui sotto), che nelle
+//  prove del 10/11/2026 ha trovato l'indirizzo da sola. Il tipo di NAT su
+//  IPv4 non c'entra: quello lo chiede al NOSTRO centralino (test_nat_type_).
+// =====================================================================
+fn stun_servers() -> Vec<String> {
+    let configurati = Config::get_option("stun-servers");
+    configurati
+        .split(',')
+        .map(|x| x.trim())
+        .filter(|x| !x.is_empty())
+        .map(|x| x.to_owned())
+        .collect()
+}
 
 pub async fn test_nat_ipv4() -> ResultType<(SocketAddr, String)> {
     use hbb_common::futures::future::{select_ok, FutureExt};
-    let tests = STUNS_V4
+    let servers = stun_servers();
+    if servers.is_empty() {
+        bail!("MTDesk: nessun server STUN configurato (opzione 'stun-servers'), richiesta non inviata");
+    }
+    let tests = servers
         .iter()
-        .map(|&stun| stun_ipv4_test(stun).boxed())
+        .map(|stun| stun_ipv4_test(stun).boxed())
         .collect::<Vec<_>>();
 
     match select_ok(tests).await {
@@ -2463,19 +2492,35 @@ pub async fn test_nat_ipv4() -> ResultType<(SocketAddr, String)> {
     };
 }
 
+// MTDesk: indirizzo di comodo per scoprire il PROPRIO indirizzo IPv6.
+// Su un socket UDP, connect() non manda nessun pacchetto: chiede soltanto al
+// sistema quale indirizzo di partenza userebbe per arrivare li'. Serve quindi
+// un indirizzo qualsiasi, non un servizio. Prima si usava il nome
+// stun.l.google.com, e il solo fatto di risolverlo diceva a chi gestisce il
+// DNS che quel computer aveva appena acceso MTDesk.
+// 2001:db8::1 e' nel blocco che la RFC 3849 riserva agli esempi: non e' di
+// nessuno, non risponde e non riceve niente.
+const IPV6_DI_COMODO: &str = "[2001:db8::1]:21116";
+
 async fn test_bind_ipv6() -> ResultType<SocketAddr> {
     let local_addr = SocketAddr::from(([0u16; 8], 0)); // [::]:0
     let socket = UdpSocket::bind(local_addr).await?;
-    let addr = STUNS_V6[0]
-        .to_socket_addrs()?
-        .filter(|x| x.is_ipv6())
-        .next()
-        .ok_or_else(|| {
-            anyhow!(
-                "Failed to resolve STUN ipv6 server address: {}",
-                STUNS_V6[0]
-            )
-        })?;
+    // Prima si prova con il NOSTRO centralino: se ha un indirizzo IPv6, e'
+    // la destinazione piu' fedele alla realta' (stessa strada che faranno i
+    // collegamenti). Il nome e' gia' noto al programma e viene risolto
+    // comunque, quindi non aggiunge niente che non succeda gia'.
+    let nostro = Config::get_rendezvous_server();
+    let addr = nostro
+        .to_socket_addrs()
+        .ok()
+        .and_then(|mut x| x.find(|x| x.is_ipv6()))
+        .or_else(|| {
+            IPV6_DI_COMODO
+                .to_socket_addrs()
+                .ok()
+                .and_then(|mut x| x.find(|x| x.is_ipv6()))
+        })
+        .ok_or_else(|| anyhow!("Nessun indirizzo IPv6 di destinazione utilizzabile"))?;
     socket.connect(addr).await?;
     Ok(socket.local_addr()?)
 }
@@ -2540,11 +2585,19 @@ pub async fn test_ipv6() -> Option<tokio::task::JoinHandle<()>> {
     });
     */
 
-    Some(tokio::spawn(async {
+    // MTDesk: con l'elenco vuoto (impostazione di fabbrica) qui non parte
+    // nessuna richiesta verso l'esterno: vale quello che test_bind_ipv6 ha
+    // gia' trovato da solo poco sopra.
+    let servers = stun_servers();
+    if servers.is_empty() {
+        return None;
+    }
+
+    Some(tokio::spawn(async move {
         use hbb_common::futures::future::{select_ok, FutureExt};
-        let tests = STUNS_V6
+        let tests = servers
             .iter()
-            .map(|&stun| stun_ipv6_test(stun).boxed())
+            .map(|stun| stun_ipv6_test(stun).boxed())
             .collect::<Vec<_>>();
 
         match select_ok(tests).await {

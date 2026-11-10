@@ -152,20 +152,23 @@ lo vuole può bloccare, nel firewall o nel router, l'accesso al dominio
 <code>dario-97-it.github.io</code> (così però non si aprono nemmeno queste pagine). Se GitHub è
 irraggiungibile il programma funziona normalmente e non segnala errori.</p>
 
-<h3>Server STUN di Google, Cloudflare e Nextcloud</h3>
-<p>È la seconda uscita verso fornitori esterni. All'avvio MTDesk cerca di capire se il computer ha
-un indirizzo internet di nuova generazione (IPv6) raggiungibile dall'esterno. Per saperlo fa una
-domanda brevissima, «con quale indirizzo mi vedi?», a tre server pubblici di un tipo chiamato
-STUN, gestiti da <strong>Google</strong>, <strong>Cloudflare</strong> e
-<strong>Nextcloud</strong> (<code>stun.l.google.com</code>, <code>stun.cloudflare.com</code>,
-<code>stun.nextcloud.com</code>). La domanda non contiene l'ID né altri dati del computer, ma
-<strong>chi la riceve vede l'indirizzo IP da cui parte</strong>. Se la connessione del computer non
-ha IPv6 la domanda non parte: resta soltanto la ricerca di quei tre nomi nel servizio DNS.</p>
-<p>Nel programma completo, in Impostazioni → Generale → Altro, ci sono due caselle che riguardano
-questo meccanismo, <strong>spente per impostazione predefinita</strong>: «Abilita hole punching
-UDP» e «Abilita connessione P2P IPv6». Con la prima attiva, la stessa domanda parte anche con
-l'indirizzo tradizionale (IPv4) ogni volta che da quel computer si avvia un collegamento. Con la
-seconda, la domanda IPv6 viene ripetuta all'avvio di un collegamento.</p>
+<h3>Server STUN di terzi: tolti</h3>
+<p>Fino al 10 novembre 2026 c'era una seconda uscita verso fornitori esterni, ereditata dal
+progetto di partenza. All'avvio MTDesk chiedeva «con quale indirizzo mi vedi?» a tre server
+pubblici di tipo STUN, gestiti da <strong>Google</strong>, <strong>Cloudflare</strong> e
+<strong>Nextcloud</strong>, per scoprire se il computer avesse un indirizzo IPv6 raggiungibile
+dall'esterno. La domanda non conteneva l'ID né altri dati, ma chi la riceveva vedeva l'indirizzo
+IP da cui partiva: tre società estranee sapevano che su quel computer era appena stato acceso
+MTDesk.</p>
+<p><strong>Quelle richieste non partono più.</strong> L'elenco dei server STUN ora è vuoto e
+MTDesk ricava lo stesso dato dal proprio sistema operativo, senza chiedere niente a nessuno. Chi
+volesse riattivare il meccanismo — per esempio puntandolo a un proprio server STUN — può farlo
+scrivendo l'indirizzo nell'impostazione <code>stun-servers</code>: finché resta vuota, non parte
+nessuna richiesta.</p>
+<p>Restano, nel programma completo, due caselle in Impostazioni → Generale → Altro, <strong>spente
+per impostazione predefinita</strong>: «Abilita hole punching UDP» e «Abilita connessione P2P
+IPv6». Riguardano il modo in cui due computer provano a collegarsi direttamente fra loro; con
+l'elenco dei server STUN vuoto non fanno uscire nessuna richiesta verso terzi.</p>
 
 <h3>Un caso particolare: reti con il solo IPv6</h3>
 <p>Su una rete che ha soltanto IPv6, per raggiungere un indirizzo di tipo tradizionale MTDesk
