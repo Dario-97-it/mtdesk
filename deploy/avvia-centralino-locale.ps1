@@ -112,23 +112,42 @@ if (-not $SaltaFirewall) {
     @{ Nome = 'MTDesk centralino 21116 UDP'; Porta = 21116; Protocollo = 'UDP' },
     @{ Nome = 'MTDesk centralino 21117 TCP'; Porta = 21117; Protocollo = 'TCP' }
   )
-  $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-  if (-not $admin) {
-    Problema "non sei amministratore: non posso aprire le porte"
-    Nota "Apri PowerShell COME AMMINISTRATORE e lancia una volta sola:"
-    foreach ($r in $regole) {
-      Nota "  New-NetFirewallRule -DisplayName '$($r.Nome)' -Direction Inbound -Action Allow -Protocol $($r.Protocollo) -LocalPort $($r.Porta) -Profile Private"
-    }
-    Nota "Poi rilancia questo script con  -SaltaFirewall"
-    Nota "NOTA: -Profile Private = vale solo sulla rete di casa, non su reti pubbliche."
+  # Il profilo della rete a cui il PC e' collegato ADESSO. Le regole vanno
+  # create per QUESTO profilo: Windows classifica ogni rete come Private o
+  # Public, e una regola "solo Private" su una rete che Windows considera
+  # Public non ha nessun effetto. Capita spesso che la rete di casa risulti
+  # Public (e' il default finche' non la si cambia a mano): la prima versione
+  # di questo script creava regole solo Private e su quei PC non apriva nulla.
+  $profilo = (Get-NetConnectionProfile | Where-Object { $_.IPv4Connectivity -ne 'Disconnected' } | Select-Object -First 1).NetworkCategory
+  if (-not $profilo) { $profilo = 'Private' }
+  if ($profilo -eq 'DomainAuthenticated') { $profilo = 'Domain' }
+  Nota "rete attuale classificata da Windows come: $profilo"
+
+  # Quando hbbs/hbbr partono la prima volta, Windows mostra la finestra
+  # "Consentire l'accesso?": se si e' risposto di si', esistono gia' regole
+  # per i due programmi e non serve crearne altre.
+  $giaConsentiti = Get-NetFirewallRule -Direction Inbound -Enabled True -Action Allow -ErrorAction SilentlyContinue |
+    Where-Object { $_.DisplayName -match '^(hbbs|hbbr)$' -and ($_.Profile -match $profilo -or $_.Profile -eq 'Any') }
+  if (($giaConsentiti | Select-Object -ExpandProperty DisplayName -Unique | Measure-Object).Count -ge 2) {
+    Ok "hbbs e hbbr sono gia' consentiti dal firewall sul profilo $profilo"
   } else {
-    foreach ($r in $regole) {
-      if (Get-NetFirewallRule -DisplayName $r.Nome -ErrorAction SilentlyContinue) {
-        Ok "regola gia' presente: $($r.Nome)"
-      } else {
-        New-NetFirewallRule -DisplayName $r.Nome -Direction Inbound -Action Allow `
-          -Protocol $r.Protocollo -LocalPort $r.Porta -Profile Private | Out-Null
-        Ok "creata: $($r.Nome)"
+    $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if (-not $admin) {
+      Problema "non sei amministratore: non posso aprire le porte"
+      Nota "Apri PowerShell COME AMMINISTRATORE e lancia una volta sola:"
+      foreach ($r in $regole) {
+        Nota "  New-NetFirewallRule -DisplayName '$($r.Nome)' -Direction Inbound -Action Allow -Protocol $($r.Protocollo) -LocalPort $($r.Porta) -Profile $profilo"
+      }
+      Nota "Poi rilancia questo script con  -SaltaFirewall"
+    } else {
+      foreach ($r in $regole) {
+        if (Get-NetFirewallRule -DisplayName $r.Nome -ErrorAction SilentlyContinue) {
+          Ok "regola gia' presente: $($r.Nome)"
+        } else {
+          New-NetFirewallRule -DisplayName $r.Nome -Direction Inbound -Action Allow `
+            -Protocol $r.Protocollo -LocalPort $r.Porta -Profile $profilo | Out-Null
+          Ok "creata: $($r.Nome) (profilo $profilo)"
+        }
       }
     }
   }
