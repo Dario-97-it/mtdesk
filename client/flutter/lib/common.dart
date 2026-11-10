@@ -282,6 +282,15 @@ class MyTheme {
     colors: brandGradientColors,
   );
 
+  /// Caldo (arancio -> rosso -> rosa): per gli avvisi e le cose che
+  /// richiedono attenzione. Sostituisce il rosa/salmone di RustDesk
+  /// (rgb 226,66,188 -> rgb 244,114,124), che non e' nella palette.
+  static const LinearGradient brandGradientWarm = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFF9800), Color(0xFFF44336), Color(0xFFE91E63)],
+  );
+
   /// Diagonale a 135 gradi, come sul sito.
   static const LinearGradient brandGradient = LinearGradient(
     begin: Alignment.topLeft,

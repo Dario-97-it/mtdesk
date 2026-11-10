@@ -639,19 +639,34 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return Stack(
       children: [
         Container(
+          // MTDesk: card di avviso nello stile del brand.
+          // Era un blocco a tutta larghezza con un gradiente rosa->salmone
+          // (rgb 226,66,188 -> rgb 244,114,124) che non appartiene alla
+          // palette Marketing Tools ed era l'elemento piu' appariscente di
+          // tutta la finestra. Ora e' una card di vetro scuro con una barra
+          // di accento arancio a sinistra: segnala comunque "attenzione",
+          // ma con i colori giusti.
           margin: EdgeInsets.fromLTRB(
-              0, marginTop, 0, bind.isIncomingOnly() ? marginTop : 0),
+              12, marginTop, 12, bind.isIncomingOnly() ? marginTop : 0),
           child: Container(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Color.fromARGB(255, 226, 66, 188),
-                  Color.fromARGB(255, 244, 114, 124),
+                color: MyTheme.bgCard,
+                borderRadius: BorderRadius.circular(14),
+                border: Border(
+                  left: BorderSide(color: Color(0xFFFF9800), width: 4),
+                  top: BorderSide(color: MyTheme.brandBorder, width: 1),
+                  right: BorderSide(color: MyTheme.brandBorder, width: 1),
+                  bottom: BorderSide(color: MyTheme.brandBorder, width: 1),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x59000000),
+                    blurRadius: 18,
+                    offset: Offset(0, 6),
+                  ),
                 ],
-              )),
-              padding: EdgeInsets.all(20),
+              ),
+              padding: EdgeInsets.fromLTRB(18, 18, 18, 18),
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -688,9 +703,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                                       padding: 8,
                                       isOutline: true,
                                       text: translate(btnText),
+                                      // MTDesk: ciano di brand invece del
+                                      // bianco, e testo a 15 invece di 20
+                                      // (a 20 la parola "Installa" usciva
+                                      // dal pulsante largo 150).
                                       textColor: Colors.white,
-                                      borderColor: Colors.white,
-                                      textSize: 20,
+                                      borderColor: MyTheme.accent,
+                                      textSize: 15,
                                       radius: 10,
                                       onTap: onPressed,
                                     )

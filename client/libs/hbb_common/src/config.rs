@@ -1163,12 +1163,31 @@ impl Config {
     }
 
     pub fn no_register_device() -> bool {
+        // MTDesk: per default il dispositivo NON si registra da nessuna parte.
+        //
+        // Upstream il default era `false`, cioe' "registra". Con un server
+        // personalizzato impostato, get_api_server_() ricava l'indirizzo del
+        // server API dalla porta del centralino meno 2 (es. :21114) e il
+        // programma ci spedisce un POST /api/sysinfo con le informazioni della
+        // macchina. MTDesk non ha un server API - il centralino fa solo
+        // rendezvous e relay - quindi quella chiamata trova la porta chiusa,
+        // aspetta 5 secondi, fallisce e riprova via proxy TCP: solo ritardo
+        // all'avvio e rumore nei log, piu' dati della macchina spediti a un
+        // indirizzo che non deve riceverli.
+        //
+        // Le uniche funzioni che questo disattiva sono `--assign`, `--deploy`
+        // e deploy_device(), che appartengono alla versione commerciale del
+        // server upstream e senza server API non erano comunque utilizzabili.
+        //
+        // Nota: il valore resta sovrascrivibile dalle BUILTIN_SETTINGS, che
+        // pero' richiedono un file di configurazione firmato con la chiave di
+        // RustDesk: per noi non sono impostabili, quindi vale il default.
         BUILTIN_SETTINGS
             .read()
             .unwrap()
             .get(keys::OPTION_REGISTER_DEVICE)
             .map(|v| v == "N")
-            .unwrap_or(false)
+            .unwrap_or(true)
     }
 
     pub fn is_disable_change_permanent_password() -> bool {
