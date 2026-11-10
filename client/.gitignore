@@ -63,5 +63,9 @@ vcpkg_installed
 flutter/lib/generated_plugin_registrant.dart
 libsciter.dylib
 flutter/web/
-# libdrmtap is cloned at build time by build.py (not a submodule)
-/third_party/libdrmtap/
+# MTDesk: third_party/ E' VERSIONATA, tutta, libdrmtap compresa.
+# Prima libdrmtap veniva scaricata a ogni build da github.com/rustdesk-org e
+# quindi era esclusa da qui. Adesso sta dentro al repository al commit fissato,
+# come le altre dipendenze: vedi client/third_party/LEGGIMI.md.
+# build.py la usa cosi' com'e' perche' e' un albero non-git con meson.build
+# presente, e in quel caso salta sia il fetch sia la verifica del commit.

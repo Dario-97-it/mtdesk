@@ -233,7 +233,6 @@ dependencies = [
 [[package]]
 name = "async-speed-limit"
 version = "0.3.1"
-source = "git+https://github.com/open-trade/async-speed-limit#f89f702ae01d4016429543d2f0dda1086157e420"
 dependencies = [
  "futures-core",
  "futures-io",
@@ -699,7 +698,6 @@ dependencies = [
 [[package]]
 name = "confy"
 version = "0.4.0-2"
-source = "git+https://github.com/rustdesk-org/confy#83db9ec19a2f97e9718aef69e4fc5611bb382479"
 dependencies = [
  "directories-next",
  "serde",
@@ -923,7 +921,6 @@ dependencies = [
 [[package]]
 name = "default_net"
 version = "0.1.0"
-source = "git+https://github.com/rustdesk-org/default_net#78f8f70cd85151a3a2c4a3230d80d5272703c02e"
 dependencies = [
  "anyhow",
  "regex",
@@ -2367,7 +2364,6 @@ dependencies = [
 [[package]]
 name = "machine-uid"
 version = "0.3.0"
-source = "git+https://github.com/rustdesk-org/machine-uid#381ff579c1dc3a6c54db9dfec47c44bcb0246542"
 dependencies = [
  "bindgen",
  "cc",
@@ -3294,7 +3290,6 @@ dependencies = [
 [[package]]
 name = "reqwest"
 version = "0.11.23"
-source = "git+https://github.com/rustdesk-org/reqwest#9cb758c9fb2f4edc62eb790acfd45a6a3da21ed3"
 dependencies = [
  "async-compression",
  "base64 0.21.7",
@@ -4195,7 +4190,6 @@ dependencies = [
 [[package]]
 name = "sysinfo"
 version = "0.29.10"
-source = "git+https://github.com/rustdesk-org/sysinfo?branch=rlim_max#90b1705d909a4902dbbbdea37ee64db17841077d"
 dependencies = [
  "cfg-if",
  "core-foundation-sys",
@@ -4429,7 +4423,6 @@ dependencies = [
 [[package]]
 name = "tokio-socks"
 version = "0.5.2-1"
-source = "git+https://github.com/rustdesk-org/tokio-socks#94e97c6d7c93b0bcbfa54f2dc397c1da0a6e43d3"
 dependencies = [
  "bytes",
  "either",

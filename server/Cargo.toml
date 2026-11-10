@@ -67,7 +67,7 @@ hbb_common = { path = "libs/hbb_common" }
 
 [workspace]
 members = ["libs/hbb_common"]
-exclude = ["ui"]
+exclude = ["ui", "third_party"]
 
 #https://github.com/johnthagen/min-sized-rust
 #https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles
@@ -78,3 +78,49 @@ panic = 'abort'
 strip = true
 #opt-level = 'z' # only have smaller size after strip # Default is 3, better performance
 #rpath = true # Not needed
+
+# =====================================================================
+#  MTDesk - dipendenze portate DENTRO il repository
+# ---------------------------------------------------------------------
+#  PERCHE'
+#  Queste librerie erano dichiarate come `git = "https://github.com/..."`:
+#  ogni compilazione le scaricava da repository di altri, in gran parte
+#  sotto l'organizzazione rustdesk-org. Significava due cose sgradite:
+#  dipendere dal fatto che quei repository restino online, e non avere
+#  alcun controllo su cosa contengono.
+#
+#  Adesso stanno in third_party/, clonate AL COMMIT ESATTO che Cargo.lock
+#  gia' fissava: il codice compilato e' identico a prima, byte per byte,
+#  ma la build non contatta piu' nessuno.
+#
+#  COME AGGIORNARNE UNA
+#  Serve solo se c'e' una ragione precisa (una correzione di sicurezza).
+#  Si rifa' il clone della singola cartella al nuovo commit e si aggiorna
+#  Cargo.lock. Non esiste piu' un `cargo update` che lo faccia da solo,
+#  ed e' voluto: nessuno deve poter cambiare il nostro codice da fuori.
+#
+#  NOTA SULLE LICENZE
+#  Ogni cartella conserva il proprio file di licenza. Sono licenze
+#  permissive (MIT/Apache-2.0) o AGPL come il resto del progetto.
+# =====================================================================
+
+[patch."https://github.com/open-trade/async-speed-limit"]
+async-speed-limit = { path = "third_party/async-speed-limit" }
+
+[patch."https://github.com/rustdesk-org/confy"]
+confy = { path = "third_party/confy" }
+
+[patch."https://github.com/rustdesk-org/default_net"]
+default_net = { path = "third_party/default_net" }
+
+[patch."https://github.com/rustdesk-org/machine-uid"]
+machine-uid = { path = "third_party/machine-uid" }
+
+[patch."https://github.com/rustdesk-org/reqwest"]
+reqwest = { path = "third_party/reqwest" }
+
+[patch."https://github.com/rustdesk-org/sysinfo"]
+sysinfo = { path = "third_party/sysinfo" }
+
+[patch."https://github.com/rustdesk-org/tokio-socks"]
+tokio-socks = { path = "third_party/tokio-socks" }

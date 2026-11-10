@@ -209,7 +209,7 @@ android-wakelock = { git = "https://github.com/rustdesk-org/android-wakelock" }
 
 [workspace]
 members = ["libs/scrap", "libs/hbb_common", "libs/enigo", "libs/clipboard", "libs/virtual_display", "libs/virtual_display/dylib", "libs/portable", "libs/remote_printer"]
-exclude = ["vdi/host"]
+exclude = ["vdi/host", "third_party"]
 
 # Patch libxdo-sys to use a stub implementation that doesn't require libxdo
 # This allows building and running on systems without libxdo installed (e.g., Wayland-only)
@@ -252,3 +252,135 @@ rpath = true
 
 [profile.dev]
 debug = 1
+
+# =====================================================================
+#  MTDesk - dipendenze portate DENTRO il repository
+# ---------------------------------------------------------------------
+#  PERCHE'
+#  Queste librerie erano dichiarate come `git = "https://github.com/..."`:
+#  ogni compilazione le scaricava da repository di altri, in gran parte
+#  sotto l'organizzazione rustdesk-org. Significava due cose sgradite:
+#  dipendere dal fatto che quei repository restino online, e non avere
+#  alcun controllo su cosa contengono.
+#
+#  Adesso stanno in third_party/, clonate AL COMMIT ESATTO che Cargo.lock
+#  gia' fissava: il codice compilato e' identico a prima, byte per byte,
+#  ma la build non contatta piu' nessuno.
+#
+#  COME AGGIORNARNE UNA
+#  Serve solo se c'e' una ragione precisa (una correzione di sicurezza).
+#  Si rifa' il clone della singola cartella al nuovo commit e si aggiorna
+#  Cargo.lock. Non esiste piu' un `cargo update` che lo faccia da solo,
+#  ed e' voluto: nessuno deve poter cambiare il nostro codice da fuori.
+#
+#  NOTA SULLE LICENZE
+#  Ogni cartella conserva il proprio file di licenza. Sono licenze
+#  permissive (MIT/Apache-2.0) o AGPL come il resto del progetto.
+# =====================================================================
+
+[patch."https://github.com/bjornsnoen/x11-rs"]
+x11 = { path = "third_party/x11-rs/x11" }
+
+[patch."https://github.com/clslaid/cacao"]
+cacao = { path = "third_party/cacao" }
+
+[patch."https://github.com/clslaid/x11-clipboard"]
+x11-clipboard = { path = "third_party/x11-clipboard" }
+
+[patch."https://github.com/madsmtm/core-foundation-rs"]
+core-foundation = { path = "third_party/core-foundation-rs/core-foundation" }
+core-foundation-sys = { path = "third_party/core-foundation-rs/core-foundation-sys" }
+core-graphics = { path = "third_party/core-foundation-rs/core-graphics" }
+core-graphics-types = { path = "third_party/core-foundation-rs/core-graphics-types" }
+
+[patch."https://github.com/rustdesk-org/The-Fat-Controller"]
+tfc = { path = "third_party/The-Fat-Controller" }
+
+[patch."https://github.com/rustdesk-org/android-wakelock"]
+android-wakelock = { path = "third_party/android-wakelock" }
+
+[patch."https://github.com/rustdesk-org/arboard"]
+arboard = { path = "third_party/arboard" }
+
+[patch."https://github.com/rustdesk-org/clipboard-master"]
+clipboard-master = { path = "third_party/clipboard-master" }
+
+[patch."https://github.com/rustdesk-org/confy"]
+confy = { path = "third_party/confy" }
+
+[patch."https://github.com/rustdesk-org/cpal"]
+cpal = { path = "third_party/cpal" }
+
+[patch."https://github.com/rustdesk-org/default_net"]
+default_net = { path = "third_party/default_net" }
+
+[patch."https://github.com/rustdesk-org/evdev"]
+evdev = { path = "third_party/evdev" }
+
+[patch."https://github.com/rustdesk-org/fuser"]
+fuser = { path = "third_party/fuser" }
+
+[patch."https://github.com/rustdesk-org/hwcodec"]
+hwcodec = { path = "third_party/hwcodec" }
+
+[patch."https://github.com/rustdesk-org/impersonate-system"]
+impersonate_system = { path = "third_party/impersonate-system" }
+
+[patch."https://github.com/rustdesk-org/kcp-sys"]
+kcp-sys = { path = "third_party/kcp-sys" }
+
+[patch."https://github.com/rustdesk-org/keepawake-rs"]
+keepawake = { path = "third_party/keepawake-rs" }
+
+[patch."https://github.com/rustdesk-org/machine-uid"]
+machine-uid = { path = "third_party/machine-uid" }
+
+[patch."https://github.com/rustdesk-org/magnum-opus"]
+magnum-opus = { path = "third_party/magnum-opus" }
+
+[patch."https://github.com/rustdesk-org/nokhwa"]
+nokhwa = { path = "third_party/nokhwa" }
+nokhwa-bindings-linux = { path = "third_party/nokhwa/nokhwa-bindings-linux" }
+nokhwa-bindings-macos = { path = "third_party/nokhwa/nokhwa-bindings-macos" }
+nokhwa-bindings-windows = { path = "third_party/nokhwa/nokhwa-bindings-windows" }
+nokhwa-core = { path = "third_party/nokhwa/nokhwa-core" }
+
+[patch."https://github.com/rustdesk-org/parity-tokio-ipc"]
+parity-tokio-ipc = { path = "third_party/parity-tokio-ipc" }
+
+[patch."https://github.com/rustdesk-org/pulsectl"]
+rust-pulsectl = { path = "third_party/pulsectl" }
+
+[patch."https://github.com/rustdesk-org/rdev"]
+rdev = { path = "third_party/rdev" }
+
+[patch."https://github.com/rustdesk-org/rust-sciter"]
+sciter-rs = { path = "third_party/rust-sciter" }
+
+[patch."https://github.com/rustdesk-org/rust-webm"]
+webm = { path = "third_party/rust-webm" }
+webm-sys = { path = "third_party/rust-webm/src/sys" }
+
+[patch."https://github.com/rustdesk-org/sysinfo"]
+sysinfo = { path = "third_party/sysinfo" }
+
+[patch."https://github.com/rustdesk-org/tao"]
+tao = { path = "third_party/tao" }
+tao-macros = { path = "third_party/tao/tao-macros" }
+
+[patch."https://github.com/rustdesk-org/tokio-socks"]
+tokio-socks = { path = "third_party/tokio-socks" }
+
+[patch."https://github.com/rustdesk-org/wallpaper.rs"]
+wallpaper = { path = "third_party/wallpaper.rs" }
+
+[patch."https://github.com/rustdesk-org/wezterm"]
+filedescriptor = { path = "third_party/wezterm/filedescriptor" }
+portable-pty = { path = "third_party/wezterm/pty" }
+
+[patch."https://github.com/tauri-apps/tray-icon"]
+tray-icon = { path = "third_party/tray-icon" }
+
+[patch."https://github.com/yury/cidre"]
+cidre = { path = "third_party/cidre/cidre" }
+cidre-macros = { path = "third_party/cidre/cidre-macros" }
