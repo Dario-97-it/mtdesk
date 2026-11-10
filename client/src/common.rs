@@ -21,7 +21,7 @@ use hbb_common::{
     },
     futures::future::join_all,
     futures_util::future::poll_fn,
-    get_version_number, log,
+    log,
     message_proto::*,
     protobuf::{Enum, Message as _},
     rendezvous_proto::*,

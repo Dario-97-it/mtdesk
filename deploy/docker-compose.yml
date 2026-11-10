@@ -1,10 +1,19 @@
 # ==========================================================================
-#  MTDesk Server  —  relay/rendezvous self-hosted (based on rustdesk-server)
-#  Marketing Tools  ·  marketingtools.digital
-#
+#  MTDesk Server - centralino self-hosted (rendezvous + relay)
+#  Marketing Tools - marketingtools.digital
+# --------------------------------------------------------------------------
 #  Va installato su una macchina con IP PUBBLICO (VPS o server con
-#  port-forwarding). Imposta MTDESK_HOST nel file .env con il tuo
-#  dominio o IP pubblico, poi:  docker compose up -d
+#  port-forwarding). Imposta MTDESK_HOST nel file .env con il tuo dominio o
+#  IP pubblico, poi:   docker compose up -d --build
+#
+#  COSA E' CAMBIATO (nov 2026) E PERCHE' CONTA
+#  Prima qui c'era "image: rustdesk/rustdesk-server:latest", cioe' un binario
+#  costruito e pubblicato da un altro progetto, su un tag mobile. Significava:
+#  non sapere cosa girava sul nostro VPS, lasciare che un loro aggiornamento
+#  cambiasse il centralino sotto i piedi, e restare in panne se avessero
+#  smesso di pubblicarla.
+#  Adesso l'immagine la costruiamo noi da ../server (vedi server/Dockerfile).
+#  La prima volta la compilazione richiede qualche minuto; dopo e' in cache.
 # ==========================================================================
 
 name: mtdesk-server
@@ -21,29 +30,47 @@ x-logging: &mtdesk-logging
     max-size: "10m"
     max-file: "3"
 
+# La costruzione dell'immagine, scritta una volta e usata dai due servizi.
+# Entrambi usano LO STESSO binario: cambia solo quale programma avviano.
+x-build: &mtdesk-build
+  context: ../server
+  dockerfile: Dockerfile
+
 services:
   hbbs:                       # ID / Rendezvous server (trova i peer per ID)
     container_name: mtdesk-hbbs
-    image: rustdesk/rustdesk-server:latest
-    # -k _  => impone la chiave del server (id_ed25519 in ./data).
-    # Per hbbs e' gia' il default, lo rendiamo esplicito per chiarezza.
+    build: *mtdesk-build
+    image: mtdesk-server:1.1.17
+    # -r  => indirizzo del relay da comunicare ai client
+    # -k _ => impone la chiave del server (id_ed25519 in ./data).
+    #         Per hbbs e' gia' il default, lo rendiamo esplicito per chiarezza.
     command: hbbs -r ${MTDESK_HOST}:21117 -k _
     ports:
       - "21115:21115"         # NAT type test (TCP)
       - "21116:21116"         # rendezvous / hole-punch (TCP)
-      - "21116:21116/udp"     # rendezvous / heartbeat (UDP) — OBBLIGATORIA
+      - "21116:21116/udp"     # rendezvous / heartbeat (UDP) - OBBLIGATORIA
     volumes:
-      - ./data:/root          # qui vengono generate le CHIAVI (id_ed25519*)
+      - ./data:/data          # qui vengono generate le CHIAVI (id_ed25519*)
     networks:
       - mtdesk-net
     depends_on:
       - hbbr
     restart: unless-stopped
     logging: *mtdesk-logging
+    healthcheck:
+      # Se la porta di rendezvous non risponde, il container risulta "unhealthy"
+      # e si vede subito con `docker compose ps`, invece di scoprirlo da un
+      # cliente che non riesce a collegarsi.
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/21116' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   hbbr:                       # Relay server (traffico quando il P2P non passa)
     container_name: mtdesk-hbbr
-    image: rustdesk/rustdesk-server:latest
+    build: *mtdesk-build
+    image: mtdesk-server:1.1.17
     # -k _  => QUI E' ESSENZIALE: senza, hbbr accetta chiunque e il relay
     # diventa un tunnel gratuito per estranei (consumo di banda).
     command: hbbr -k _
@@ -57,12 +84,33 @@ services:
       - TOTAL_BANDWIDTH=32    # Mb/s massimi su tutte le sessioni insieme
       - LIMIT_SPEED=8         # Mb/s per gli IP declassati / in blacklist.txt
     volumes:
-      - ./data:/root
+      - ./data:/data
     networks:
       - mtdesk-net
     restart: unless-stopped
     logging: *mtdesk-logging
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/21117' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
-# NOTA: le porte 21118 e 21119 (websocket per il web client) sono state
-# RIMOSSE di proposito: il web client non e' usato e non lo sara'.
-# Meno porte esposte = meno superficie di attacco.
+# --------------------------------------------------------------------------
+#  PORTE 21118 / 21119 (trasporto WebSocket): NON pubblicate, ma la scelta
+#  va fatta con consapevolezza.
+#
+#  Il commento precedente diceva che servono "solo al web client". Non e'
+#  esatto: il client desktop sa parlare anche via WebSocket (vedi
+#  libs/hbb_common/src/websocket.rs e l'opzione use_ws). Serve nel caso di
+#  un cliente dietro una rete aziendale che blocca le porte alte
+#  21115-21117: in quello scenario, senza WebSocket, non si collega e non
+#  c'e' rimedio lato cliente.
+#
+#  Tenerle chiuse = meno superficie di attacco, ed e' giusto finche' nessun
+#  cliente sta dietro a un firewall restrittivo. Se succede, la via corretta
+#  NON e' pubblicarle cosi' come sono (sarebbero in chiaro su porte alte,
+#  quindi non risolverebbero il problema), ma metterle dietro un reverse
+#  proxy in HTTPS sulla 443, che e' l'unica porta sempre aperta.
+#  Da decidere quando serve, non prima.
+# --------------------------------------------------------------------------

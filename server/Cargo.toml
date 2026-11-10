@@ -1,7 +1,7 @@
 [package]
 name = "hbbs"
 version = "1.1.17"
-authors = ["rustdesk <info@rustdesk.com>"]
+authors = ["Marketing Tools <marketing_tools@libero.it>"]
 edition = "2021"
 build = "build.rs"
 default-run = "hbbs"
@@ -11,7 +11,9 @@ name = "hbbr"
 path = "src/hbbr.rs"
 
 [[bin]]
-name = "rustdesk-utils"
+# MTDesk: rinominato da rustdesk-utils. E' lo strumento a riga di comando
+# per generare/validare le chiavi e per diagnosticare la connessione.
+name = "mtdesk-utils"
 path = "src/utils.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

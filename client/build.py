@@ -953,9 +953,15 @@ def build_flutter_windows(version, features, skip_portable_pack):
     if skip_portable_pack:
         return
     os.chdir('libs/portable')
-    system2('pip3 install -r requirements.txt')
+    # MTDesk: su Windows non esistono i comandi `pip3` e `python3` (ci sono
+    # `python` e `py`). system2() esce con errore se il comando non si trova,
+    # quindi build.py si interrompeva QUI, subito dopo una build riuscita, e
+    # l'eseguibile portable non veniva mai prodotto. sys.executable e'
+    # l'interprete che sta eseguendo questo script: funziona su qualunque
+    # sistema e qualunque nome abbia.
+    system2(f'"{sys.executable}" -m pip install -r requirements.txt')
     system2(
-        f'python3 ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/rustdesk.exe')
+        f'"{sys.executable}" ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/rustdesk.exe')
     os.chdir('../..')
     if os.path.exists('./rustdesk_portable.exe'):
         os.replace('./target/release/rustdesk-portable-packer.exe',
@@ -963,11 +969,34 @@ def build_flutter_windows(version, features, skip_portable_pack):
     else:
         os.rename('./target/release/rustdesk-portable-packer.exe',
                   './rustdesk_portable.exe')
+    # ==================================================================
+    #  MTDesk: nomi degli artefatti Windows
+    # ------------------------------------------------------------------
+    #  ATTENZIONE, non e' cosmetica: su Windows il NOME DEL FILE decide il
+    #  comportamento del programma. Sono due controlli dentro il codice:
+    #
+    #   - un nome che FINISCE in "install.exe" fa comparire la schermata di
+    #     installazione (src/common.rs, is_setup() -> inietta --install in
+    #     src/core_main.rs). Un nome che non finisce cosi' NON installa:
+    #     si apre e gira, e l'utente deve premere Installa a mano.
+    #   - un nome che CONTIENE "-qs.exe", "_qs.exe" o "-qs-" avvia la
+    #     modalita' Quick Support (src/core_main.rs, is_quick_support_exe()).
+    #
+    #  I due file sono quindi LO STESSO BINARIO con due nomi diversi, e i
+    #  nomi sono stabili (senza numero di versione) perche' i link
+    #  /releases/latest/download/... non si rompano a ogni rilascio.
+    # ==================================================================
     print(
         f'output location: {os.path.abspath(os.curdir)}/rustdesk_portable.exe')
-    os.rename('./rustdesk_portable.exe', f'./rustdesk-{version}-install.exe')
-    print(
-        f'output location: {os.path.abspath(os.curdir)}/rustdesk-{version}-install.exe')
+    installer = './MTDesk-windows-x86_64-install.exe'
+    quick_support = './MTDesk-qs.exe'
+    for vecchio in (installer, quick_support):
+        if os.path.exists(vecchio):
+            os.remove(vecchio)
+    os.rename('./rustdesk_portable.exe', installer)
+    shutil.copy2(installer, quick_support)
+    print(f'output location: {os.path.abspath(os.curdir)}/{installer[2:]}   (installa)')
+    print(f'output location: {os.path.abspath(os.curdir)}/{quick_support[2:]}   (assistenza veloce, non installa)')
 
 
 def main():
@@ -1031,10 +1060,11 @@ def main():
         system2(
             f'cp -rf target/release/RustDesk.exe {res_dir}')
         os.chdir('libs/portable')
-        system2('pip3 install -r requirements.txt')
+        # MTDesk: vedi la nota in build_flutter_windows(), stesso problema.
+        system2(f'"{sys.executable}" -m pip install -r requirements.txt')
         system2(
-            f'python3 ./generate.py -f ../../{res_dir} -o . -e ../../{res_dir}/rustdesk-{version}-win7-install.exe')
-        system2(f'mv ../../{res_dir}/rustdesk-{version}-win7-install.exe ../..')
+            f'"{sys.executable}" ./generate.py -f ../../{res_dir} -o . -e ../../{res_dir}/MTDesk-win7-x86_64-install.exe')
+        system2(f'mv ../../{res_dir}/MTDesk-win7-x86_64-install.exe ../..')
     elif os.path.isfile('/usr/bin/pacman'):
         # pacman -S -needed base-devel
         system2("sed -i 's/pkgver=.*/pkgver=%s/g' res/PKGBUILD" % version)
