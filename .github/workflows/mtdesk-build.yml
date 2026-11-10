@@ -580,10 +580,10 @@ jobs:
       - name: Sistema il pacchetto e dagli il nome definitivo
         # Qui si fanno tre cose.
         #
-        # 1) SI TROVA IL PACCHETTO. build.py lo chiama rustdesk-<versione>.deb,
-        #    perche' il nome interno del progetto non e' stato cambiato (e' solo
-        #    tecnico). Lo cerchiamo con un glob, cosi' il passo continua a
-        #    funzionare anche se in futuro il nome interno cambia col rebrand Linux.
+        # 1) SI TROVA IL PACCHETTO. build.py lo chiama ormai mtdesk-<versione>.deb
+        #    (generate_control_file dichiara "Package: mtdesk"). Lo cerchiamo
+        #    comunque con un glob, che vale per qualunque nome, e si ferma di
+        #    proposito se ne trova piu' di uno.
         #
         # 2) SI METTONO I FILE A NOME DI root. Questo e' importante e non e'
         #    un dettaglio estetico. Un pacchetto .deb si porta dietro anche
@@ -687,8 +687,16 @@ jobs:
           body: |
             ## MTDesk ${{ steps.nome.outputs.tag }}
 
-            Assistenza remota di Marketing Tools. Si collega da solo al centralino
-            `mtdesk.marketingtools.digital`: non c'e' niente da configurare.
+            Assistenza remota di Marketing Tools.
+
+            > **Attenzione, da leggere prima di installare.** Il centralino
+            > predefinito `mtdesk.marketingtools.digital` **non e' ancora
+            > attivo**: finche' non lo e', dopo l'installazione l'ID resta
+            > arancione e il collegamento non si stabilisce. Per provare adesso
+            > serve indicare un centralino proprio in
+            > Impostazioni -> Rete -> Server ID/Inoltro. Istruzioni in
+            > `deploy/avvia-centralino-locale.ps1` (prova in rete locale) e in
+            > `GUIDA-MESSA-IN-OPERA.md` (centralino su VPS).
 
             ### Download
 
