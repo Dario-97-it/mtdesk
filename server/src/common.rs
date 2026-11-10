@@ -120,7 +120,7 @@ pub fn set_arg(name: &str, value: &str) {
 pub fn init_args(args: &str, name: &str, about: &str) {
     let matches = App::new(name)
         .version(crate::version::VERSION)
-        .author("Purslane Ltd. <info@rustdesk.com>")
+        .author("Marketing Tools - opera derivata di rustdesk-server (AGPL-3.0)")
         .about(about)
         .args_from_usage(args)
         .get_matches();
@@ -279,32 +279,16 @@ pub async fn listen_signal() -> Result<()> {
 }
 
 
-pub fn check_software_update() {
-    const ONE_DAY_IN_SECONDS: u64 = 60 * 60 * 24;
-    std::thread::spawn(move || loop {
-        std::thread::spawn(move || allow_err!(check_software_update_()));
-        std::thread::sleep(std::time::Duration::from_secs(ONE_DAY_IN_SECONDS));
-    });
-}
-
-#[tokio::main(flavor = "current_thread")]
-async fn check_software_update_() -> hbb_common::ResultType<()> {
-    let (request, url) = hbb_common::version_check_request(hbb_common::VER_TYPE_RUSTDESK_SERVER.to_string());
-    let latest_release_response = reqwest::Client::builder().build()?
-        .post(url)
-        .json(&request)
-        .send()
-        .await?;
-
-    let bytes = latest_release_response.bytes().await?;
-    let resp: hbb_common::VersionCheckResponse = serde_json::from_slice(&bytes)?;
-    let response_url = resp.url;
-    let latest_release_version = response_url.rsplit('/').next().unwrap_or_default();
-    if get_version_number(&latest_release_version) > get_version_number(crate::version::VERSION) {
-       log::info!("new version is available: {}", latest_release_version);
-    }
-    Ok(())
-}
+// MTDesk: il centralino NON contatta nessuno.
+//
+// Il codice originale lanciava un thread che ogni 24 ore inviava una richiesta
+// POST a https://api.rustdesk.com/version/latest contenente sistema, versione,
+// architettura e un'impronta della macchina, solo per scrivere nel log se
+// esistesse una versione piu' recente del server. Su un VPS che gestisce
+// l'assistenza dei nostri clienti non c'e' nessuna ragione per farlo.
+//
+// La funzione resta (e' chiamata da main.rs) ma non fa nulla.
+pub fn check_software_update() {}
 
 #[cfg(test)]
 mod tests {
@@ -316,9 +300,9 @@ mod tests {
         let aliases = [
             "RUSTDESK-CONFIG-ALIAS-TEST",
             "RUSTDESK_CONFIG_ALIAS_TEST",
-            "rustdesk-config-alias-test",
-            "rustdesk_config_alias_test",
-            "RustDesk_Config-Alias_Test",
+            "mtdesk-config-alias-test",
+            "mtdesk_config_alias_test",
+            "MTDesk_Config-Alias_Test",
         ];
         for alias in aliases {
             std::env::remove_var(alias);
@@ -328,14 +312,14 @@ mod tests {
             assert_eq!(get_arg("RUSTDESK_CONFIG_ALIAS_TEST"), alias);
             std::env::remove_var(alias);
         }
-        set_arg("rustdesk_config_alias_test", "normalized");
+        set_arg("mtdesk_config_alias_test", "normalized");
         assert_eq!(
             std::env::var("RUSTDESK-CONFIG-ALIAS-TEST").unwrap(),
             "normalized"
         );
         std::env::set_var("RUSTDESK_CONFIG_ALIAS_TEST", "inherited");
-        set_arg("rustdesk-config-alias-test", "higher-priority");
-        assert_eq!(get_arg("rustdesk_config_alias_test"), "higher-priority");
+        set_arg("mtdesk-config-alias-test", "higher-priority");
+        assert_eq!(get_arg("mtdesk_config_alias_test"), "higher-priority");
         std::env::remove_var("RUSTDESK-CONFIG-ALIAS-TEST");
         std::env::remove_var("RUSTDESK_CONFIG_ALIAS_TEST");
     }
