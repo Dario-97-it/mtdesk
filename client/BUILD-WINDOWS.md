@@ -12,7 +12,7 @@ Ogni versione qui è un **vincolo di compatibilità** preso dal CI ufficiale: **
 |---|---|---|
 | **Visual Studio 2022** | — | con workload **Desktop development with C++** (MSVC + Windows SDK) |
 | **Rust** | **1.75.0** | target `x86_64-pc-windows-msvc` + component `rustfmt`. **NON** 1.78+ (rompe ABI i128/sciter) |
-| **Flutter** | **3.24.5** (x64) | + **engine custom RustDesk** (vedi sotto) + patch dropdown |
+| **Flutter** | **3.24.5** (x64) | motore UFFICIALE dello SDK + patch dropdown + patch generatore VS |
 | **LLVM/Clang** | **15.0.6** | per bindgen/scrap. Serve `LIBCLANG_PATH` |
 | **vcpkg** | commit `9e593bb18ea69cc5095e012465dcd675a822ed0d` | triplet `x64-windows-static`, overlay `res/vcpkg` |
 | **flutter_rust_bridge_codegen** | **1.80.1** | genera il bridge FFI Dart↔Rust |
@@ -32,17 +32,23 @@ rustup component add rustfmt
 Installa da https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.6 (`LLVM-15.0.6-win64.exe`).
 Poi: `setx LIBCLANG_PATH "C:\Program Files\LLVM\bin"`
 
-### 3. Flutter 3.24.5 + engine custom + patch
+### 3. Flutter 3.24.5 + patch
 ```powershell
 # scarica ed estrai flutter_windows_3.24.5-stable.zip, aggiungi <flutter>\bin al PATH
 flutter --version          # deve dire 3.24.5
 flutter config --enable-windows-desktop
 flutter precache --windows # crea la cartella engine
 
-# ENGINE CUSTOM RustDesk (obbligatorio per il rendering video):
-Invoke-WebRequest https://github.com/rustdesk/engine/releases/download/main/windows-x64-release.zip -OutFile eng.zip
-Expand-Archive eng.zip -DestinationPath eng
-Copy-Item eng\* "<flutter>\bin\cache\artifacts\engine\windows-x64-release\" -Force
+# NESSUN motore di terzi: si usa quello dello SDK Flutter.
+# Il download del motore compilato da RustDesk (github.com/rustdesk/engine, tag
+# mobile "main", senza checksum) e' stato RIMOSSO: era un binario di altri che
+# finiva dentro l'eseguibile consegnato ai clienti.
+# Verificato il 10/11/2026: con il motore ufficiale la build passa e il programma
+# si avvia. LIMITE DA CONOSCERE: questo non dimostra ancora che il rendering video
+# in sessione sia identico, perche' upstream quel motore e' modificato per il
+# percorso di rendering a texture. Se in una sessione vera il video risultasse
+# lento, strappato o nero, e' il primo sospetto: la nota su come reintrodurlo in
+# modo controllato sta in scripts/install-toolchain.ps1.
 
 # PATCH dropdown (solo 3.24.5):
 Copy-Item .github\patches\flutter_3.24.4_dropdown_menu_enableFilter.diff "<flutter>"

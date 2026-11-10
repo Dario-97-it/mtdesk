@@ -75,15 +75,32 @@ $env:Path = "$FlutterDir\bin;$env:Path"
 & "$FlutterDir\bin\flutter.bat" config --enable-windows-desktop --no-analytics
 & "$FlutterDir\bin\flutter.bat" precache --windows
 
-Step "Engine custom RustDesk (x64)"
-$engineDst = "$FlutterDir\bin\cache\artifacts\engine\windows-x64-release"
-New-Item -ItemType Directory -Force -Path $engineDst | Out-Null
-$ez = Join-Path $env:TEMP "windows-x64-release.zip"
-Invoke-WebRequest -UseBasicParsing "https://github.com/rustdesk/engine/releases/download/main/windows-x64-release.zip" -OutFile $ez
-$etmp = Join-Path $env:TEMP "mtdesk-engine"; Remove-Item $etmp -Recurse -Force -ErrorAction SilentlyContinue
-Expand-Archive $ez -DestinationPath $etmp -Force
-Copy-Item "$etmp\*" $engineDst -Recurse -Force
-Write-Host "Engine copiato in $engineDst"
+Step "Motore Flutter: si usa quello UFFICIALE"
+# ---------------------------------------------------------------------
+#  MTDesk: il download del motore Flutter compilato da RustDesk E' STATO
+#  TOLTO. Scaricava
+#      github.com/rustdesk/engine/releases/download/main/windows-x64-release.zip
+#  cioe' un BINARIO di terzi, da un tag mobile ("main", che cambia sotto i
+#  piedi), senza alcun checksum, e lo copiava dentro la cache di Flutter.
+#  Quel binario finiva dentro l'eseguibile consegnato ai clienti: era la
+#  dipendenza da terzi piu' scomoda di tutto il progetto.
+#
+#  VERIFICATO il 10/11/2026: con il motore ufficiale dello SDK Flutter
+#  3.24.5 la compilazione passa e il programma si avvia correttamente
+#  (flutter_windows.dll datata 13/11/2024, quella dello SDK).
+#
+#  ATTENZIONE, un limite da conoscere: questo dimostra che la BUILD non ha
+#  bisogno del loro motore, NON che il rendering video durante una sessione
+#  sia identico. Upstream quel motore e' modificato per il percorso di
+#  rendering a texture (flutter_gpu_texture_renderer). Se in una sessione
+#  reale il video risultasse lento, strappato o nero, e' il primo sospetto.
+#
+#  COME TORNARE INDIETRO, se mai servisse: scaricare quello zip UNA volta,
+#  calcolarne lo SHA-256, metterne copia in client/third_party/flutter-engine/
+#  e farla copiare da qui con confronto di hash obbligatorio. Non
+#  reintrodurre il download diretto.
+# ---------------------------------------------------------------------
+Write-Host "Nessun motore di terzi da scaricare: si usa quello dello SDK Flutter $FLUTTER_VERSION."
 
 Step "Patch dropdown Flutter 3.24.5"
 $diff = Join-Path $ClientRoot ".github\patches\flutter_3.24.4_dropdown_menu_enableFilter.diff"
